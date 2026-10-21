@@ -3,18 +3,149 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>ポートフォリオ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GAME PROGRAMMER PORTFOLIO</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <h1>ポートフォリオ</h1>
+    <!-- ヘッダー -->
+    <header>
+        <div class="logo">
+            PORTFOLIO
+        </div>
 
-    <h2>プロフィール</h2>
-    <p>ゲーム制作をしています。</p>
+        <nav>
+            <a href="#home">HOME</a>
+            <a href="#works">WORKS</a>
+            <a href="#profile">PROFILE</a>
+        </nav>
+    </header>
 
-    <h2>制作作品</h2>
-    <p>Beyond the goal</p>
+
+    <!-- メインビジュアル -->
+    <main>
+
+        <section id="home" class="hero">
+
+            <p class="subtitle">
+                GAME PROGRAMMER
+            </p>
+
+            <h1>
+                PORTFOLIO
+            </h1>
+
+            <p class="description">
+                Game Development / C++ / DirectX
+            </p>
+
+            <a href="#works" class="button">
+                VIEW WORKS
+            </a>
+
+        </section>
+
+
+        <!-- 作品 -->
+        <section id="works" class="works">
+
+            <h2>WORKS</h2>
+
+            <p class="section-description">
+                これまでに制作したゲーム作品
+            </p>
+
+            <div class="work-container">
+
+                <div class="work-card">
+
+                    <div class="work-image">
+                        GAME
+                    </div>
+
+                    <div class="work-content">
+
+                        <h3>
+                            Beyond the goal
+                        </h3>
+
+                        <p>
+                            DirectXTKを使用して制作した
+                            3Dアクションゲーム。
+                        </p>
+
+                        <span>
+                            C++ / DirectXTK
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="work-card">
+
+                    <div class="work-image">
+                        GAME
+                    </div>
+
+                    <div class="work-content">
+
+                        <h3>
+                            Enemy Attack Game
+                        </h3>
+
+                        <p>
+                            敵の攻撃を受けるとダメージを受け、
+                            3回攻撃されるとゲームオーバーになるゲーム。
+                        </p>
+
+                        <span>
+                            C++ / DirectXTK
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- プロフィール -->
+        <section id="profile" class="profile">
+
+            <h2>PROFILE</h2>
+
+            <div class="profile-content">
+
+                <h3>ABOUT ME</h3>
+
+                <p>
+                    ゲーム制作を中心に、
+                    C++やDirectXを使用したプログラミングを学んでいます。
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- フッター -->
+    <footer>
+
+        <p>
+            © 2026 GAME PROGRAMMER PORTFOLIO
+        </p>
+
+    </footer>
 
 </body>
 
