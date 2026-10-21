@@ -1,0 +1,336 @@
+/* =========================
+   全体
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, "Noto Sans JP", sans-serif;
+    background: #07191c;
+    color: white;
+    line-height: 1.8;
+}
+
+
+/* =========================
+   ヘッダー
+========================= */
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 20px 60px;
+
+    background: rgba(7, 25, 28, 0.9);
+    border-bottom: 1px solid #1e666b;
+
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+nav {
+    display: flex;
+    gap: 35px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 2px;
+
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #39d6c8;
+}
+
+
+/* =========================
+   メイン
+========================= */
+
+main {
+    width: 100%;
+}
+
+
+/* =========================
+   ヒーロー
+========================= */
+
+.hero {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 100px 20px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #12464a 0%,
+            #07191c 55%,
+            #040d0f 100%
+        );
+}
+
+.subtitle {
+    color: #39d6c8;
+    font-size: 18px;
+    letter-spacing: 6px;
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 80px;
+    letter-spacing: 12px;
+    margin-bottom: 20px;
+}
+
+.description {
+    font-size: 18px;
+    color: #b8d5d5;
+    margin-bottom: 40px;
+}
+
+
+/* =========================
+   ボタン
+========================= */
+
+.button {
+    display: inline-block;
+
+    padding: 14px 40px;
+
+    border: 1px solid #39d6c8;
+
+    color: #39d6c8;
+
+    text-decoration: none;
+
+    letter-spacing: 3px;
+
+    transition: 0.3s;
+}
+
+.button:hover {
+    background: #39d6c8;
+    color: #07191c;
+
+    box-shadow: 0 0 25px rgba(57, 214, 200, 0.5);
+}
+
+
+/* =========================
+   共通セクション
+========================= */
+
+.works,
+.profile {
+    padding: 120px 10%;
+}
+
+.works {
+    background: #091f22;
+}
+
+.profile {
+    background: #07191c;
+}
+
+section h2 {
+    font-size: 42px;
+    letter-spacing: 6px;
+
+    margin-bottom: 10px;
+}
+
+.section-description {
+    color: #9bb8b8;
+    margin-bottom: 50px;
+}
+
+
+/* =========================
+   WORKS
+========================= */
+
+.work-container {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 30px;
+}
+
+.work-card {
+    background: #0d292d;
+
+    border: 1px solid #1e666b;
+
+    transition: 0.3s;
+
+    overflow: hidden;
+}
+
+.work-card:hover {
+    transform: translateY(-8px);
+
+    border-color: #39d6c8;
+
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+
+/* 仮のゲーム画像 */
+
+.work-image {
+    height: 220px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #123f43,
+            #07191c
+        );
+
+    color: #39d6c8;
+
+    font-size: 28px;
+    letter-spacing: 5px;
+}
+
+
+/* 作品情報 */
+
+.work-content {
+    padding: 30px;
+}
+
+.work-content h3 {
+    font-size: 25px;
+    margin-bottom: 15px;
+}
+
+.work-content p {
+    color: #b8d5d5;
+    margin-bottom: 20px;
+}
+
+.work-content span {
+    color: #39d6c8;
+    font-size: 14px;
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-content {
+    max-width: 800px;
+
+    margin-top: 40px;
+
+    padding: 40px;
+
+    border-left: 3px solid #39d6c8;
+
+    background: #0d292d;
+}
+
+.profile-content h3 {
+    color: #39d6c8;
+    letter-spacing: 3px;
+
+    margin-bottom: 20px;
+}
+
+.profile-content p {
+    color: #c3d8d8;
+}
+
+
+/* =========================
+   フッター
+========================= */
+
+footer {
+    text-align: center;
+
+    padding: 30px;
+
+    background: #040d0f;
+
+    color: #6f9090;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   スマホ対応
+========================= */
+
+@media (max-width: 700px) {
+
+    header {
+        padding: 15px 20px;
+    }
+
+    nav {
+        gap: 15px;
+    }
+
+    nav a {
+        font-size: 11px;
+    }
+
+    .hero h1 {
+        font-size: 45px;
+        letter-spacing: 6px;
+    }
+
+    .work-container {
+        grid-template-columns: 1fr;
+    }
+
+    .works,
+    .profile {
+        padding: 80px 7%;
+    }
+
+}
