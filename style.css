@@ -99,24 +99,33 @@ main {
             #07191c 55%,
             #040d0f 100%
         );
+
+    scroll-margin-top: 80px;
 }
 
 .subtitle {
     color: #39d6c8;
+
     font-size: 18px;
+
     letter-spacing: 6px;
+
     margin-bottom: 20px;
 }
 
 .hero h1 {
     font-size: 80px;
+
     letter-spacing: 12px;
+
     margin-bottom: 20px;
 }
 
 .description {
     font-size: 18px;
+
     color: #b8d5d5;
+
     margin-bottom: 40px;
 }
 
@@ -143,9 +152,11 @@ main {
 
 .button:hover {
     background: #39d6c8;
+
     color: #07191c;
 
-    box-shadow: 0 0 25px rgba(57, 214, 200, 0.5);
+    box-shadow:
+        0 0 25px rgba(57, 214, 200, 0.5);
 }
 
 
@@ -160,14 +171,19 @@ main {
 
 .works {
     background: #091f22;
+
+    scroll-margin-top: 80px;
 }
 
 .profile {
     background: #07191c;
+
+    scroll-margin-top: 80px;
 }
 
 section h2 {
     font-size: 42px;
+
     letter-spacing: 6px;
 
     margin-bottom: 10px;
@@ -175,6 +191,7 @@ section h2 {
 
 .section-description {
     color: #9bb8b8;
+
     margin-bottom: 50px;
 }
 
@@ -191,17 +208,24 @@ section h2 {
     gap: 30px;
 }
 
-.work-card {
+
+/* =========================
+   作品カード
+========================= */
+
+.work-detail {
     background: #0d292d;
 
     border: 1px solid #1e666b;
+
+    padding: 30px;
 
     transition: 0.3s;
 
     overflow: hidden;
 }
 
-.work-card:hover {
+.work-detail:hover {
     transform: translateY(-8px);
 
     border-color: #39d6c8;
@@ -211,51 +235,59 @@ section h2 {
 }
 
 
-/* 仮のゲーム画像 */
+/* =========================
+   作品タイトル
+========================= */
 
-.work-image {
-    height: 220px;
+.work-detail h3 {
+    color: white;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    font-size: 25px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #123f43,
-            #07191c
-        );
+    margin-bottom: 10px;
+}
 
+
+/* =========================
+   ゲーム種類
+========================= */
+
+.game-type {
     color: #39d6c8;
 
-    font-size: 28px;
-    letter-spacing: 5px;
+    font-size: 15px;
+
+    margin-bottom: 25px;
 }
 
 
-/* 作品情報 */
+/* =========================
+   作品情報
+========================= */
 
-.work-content {
-    padding: 30px;
+.work-info {
+    border-top: 1px solid #1e666b;
+
+    padding-top: 20px;
 }
 
-.work-content h3 {
-    font-size: 25px;
+.work-info h4 {
+    color: #39d6c8;
+
+    font-size: 16px;
+
+    margin-top: 15px;
+
+    margin-bottom: 5px;
+}
+
+.work-info p {
+    color: #b8d5d5;
+
     margin-bottom: 15px;
 }
 
-.work-content p {
-    color: #b8d5d5;
-    margin-bottom: 20px;
-}
 
-.work-content span {
-    color: #39d6c8;
-    font-size: 14px;
-}
-
-```css
 /* =========================
    WORK DETAIL
 ========================= */
@@ -267,9 +299,6 @@ section h2 {
 
     scroll-margin-top: 80px;
 }
-
-
-/* 詳細情報のカード */
 
 .detail-item {
     max-width: 900px;
@@ -285,18 +314,12 @@ section h2 {
     transition: 0.3s;
 }
 
-
-/* マウスを乗せたとき */
-
 .detail-item:hover {
     border-color: #39d6c8;
 
     box-shadow:
         0 10px 40px rgba(0, 0, 0, 0.4);
 }
-
-
-/* タイトル */
 
 .detail-item h3 {
     color: white;
@@ -305,9 +328,6 @@ section h2 {
 
     margin-bottom: 10px;
 }
-
-
-/* 見出し */
 
 .detail-item h4 {
     color: #39d6c8;
@@ -319,25 +339,15 @@ section h2 {
     margin-bottom: 5px;
 }
 
-
-/* 説明 */
-
 .detail-item p {
     color: #b8d5d5;
 
     margin-bottom: 15px;
 }
 
-
-/* ゲーム種類 */
-
 .detail-item .game-type {
     color: #39d6c8;
 }
-```
-
-
-
 
 
 /* =========================
@@ -358,6 +368,7 @@ section h2 {
 
 .profile-content h3 {
     color: #39d6c8;
+
     letter-spacing: 3px;
 
     margin-bottom: 20px;
@@ -405,7 +416,18 @@ footer {
 
     .hero h1 {
         font-size: 45px;
+
         letter-spacing: 6px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+
+        letter-spacing: 4px;
+    }
+
+    .description {
+        font-size: 15px;
     }
 
     .work-container {
@@ -413,8 +435,26 @@ footer {
     }
 
     .works,
-    .profile {
+    .profile,
+    .work-detail-section {
         padding: 80px 7%;
     }
 
+    section h2 {
+        font-size: 32px;
+
+        letter-spacing: 4px;
+    }
+
+    .work-detail {
+        padding: 25px;
+    }
+
+    .detail-item {
+        padding: 25px;
+    }
+
+    .profile-content {
+        padding: 25px;
+    }
 }
