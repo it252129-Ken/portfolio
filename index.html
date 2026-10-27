@@ -1,204 +1,90 @@
-```html
-<!DOCTYPE html>
-<html lang="ja">
+```css
+/* =========================
+   WORKS
+========================= */
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+.work-container {
+    display: grid;
 
-    <title>GAME PROGRAMMER PORTFOLIO</title>
+    grid-template-columns: repeat(2, 1fr);
 
-    <link rel="stylesheet" href="style.css">
-</head>
+    gap: 30px;
+}
 
-<body>
 
-    <!-- ヘッダー -->
-    <header>
+/* 作品カード */
 
-        <div class="logo">
-            PORTFOLIO
-        </div>
+.work-detail {
+    background: #0d292d;
 
-        <nav>
-            <a href="#home">HOME</a>
-            <a href="#works">WORKS</a>
-            <a href="#work-detail">WORK DETAIL</a>
-            <a href="#profile">PROFILE</a>
-        </nav>
+    border: 1px solid #1e666b;
 
-    </header>
+    padding: 30px;
 
+    margin-bottom: 30px;
 
-    <!-- メイン -->
-    <main>
+    transition: 0.3s;
+}
 
-        <!-- ================================= -->
-        <!-- HOME -->
-        <!-- ================================= -->
-        <section id="home" class="hero">
+.work-detail:hover {
+    transform: translateY(-8px);
 
-            <p class="subtitle">
-                GAME PROGRAMMER
-            </p>
+    border-color: #39d6c8;
 
-            <h1>
-                PORTFOLIO
-            </h1>
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.4);
+}
 
-            <p class="description">
-                Game Development / C++ / DirectX
-            </p>
 
-            <a href="#works" class="button">
-                VIEW WORKS
-            </a>
+/* 作品タイトル */
 
-        </section>
+.work-detail h3 {
+    color: white;
 
+    font-size: 25px;
 
-        <!-- ================================= -->
-        <!-- WORKS -->
-        <!-- ================================= -->
-        <section id="works" class="works">
+    margin-bottom: 10px;
+}
 
-            <h2>WORKS</h2>
 
-            <p class="section-description">
-                これまでに制作したゲーム作品
-            </p>
+/* ゲーム種類 */
 
+.game-type {
+    color: #39d6c8;
 
-            <!-- =============================== -->
-            <!-- Beyond the goal -->
-            <!-- =============================== -->
-            <div class="work-detail">
+    font-size: 15px;
 
-                <h3>Beyond the goal</h3>
+    margin-bottom: 25px;
+}
 
-                <p class="game-type">
-                    3Dアクションゲーム
-                </p>
 
-                <div class="work-info">
+/* 作品情報 */
 
-                    <h4>使用技術</h4>
+.work-info {
+    border-top: 1px solid #1e666b;
 
-                    <p>
-                        C++ / DirectXTK / Visual Studio
-                    </p>
+    padding-top: 20px;
+}
 
-                    <h4>ゲーム概要</h4>
 
-                    <P>
-                    探索型のゲームで複数の扉をくぐり最後にあるゴールを目指します。
+/* 見出し */
 
-                    </P>
+.work-info h4 {
+    color: #39d6c8;
 
-                    <p>
-                        プレイヤーを操作してステージを進み、
-                        仕掛けを解きながらゴールを目指す3Dアクションゲームです。
-                    </p>
+    font-size: 16px;
 
-                    <h4>担当</h4>
+    margin-top: 15px;
 
-                    <p>
-                        プログラム / ゲームシステム / ステージ制作
-                    </p>
+    margin-bottom: 5px;
+}
 
-                </div>
 
-            </div>
+/* 説明文 */
 
+.work-info p {
+    color: #b8d5d5;
 
-
-            
-            
-            <!-- ================================= -->
-            <!-- work-detail -->
-            <!-- ================================= -->
-
-            <!-- =============================== -->
-            <!-- ポンゲーム -->
-            <!-- =============================== -->
-            <div class="work-detail">
-
-                <h3>ポンゲーム</h3>
-
-                <p class="game-type">
-                    2Dアクションゲーム
-                </p>
-
-                <div class="work-info">
-
-                    <h4>使用技術</h4>
-
-                    <p>
-                        C++ / DirectXTK / Visual Studio
-                    </p>
-
-                    <h4>ゲーム概要</h4>
-
-                    <p>
-                       ボールを跳ね返して壁を壊しポイントをためるゲームです。
-                    </p>
-
-                    <p>
-                        「ポイント」
-                        壁の跳ね返りを見てボールが次にどこに行くかを予想して動きましょう
-                    </p>
-
-                    <h4>担当</h4>
-
-                    <p>
-                        プログラム / ゲームシステム
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ================================= -->
-        <!-- PROFILE -->
-        <!-- ================================= -->
-        <section id="profile" class="profile">
-
-            <h2>PROFILE</h2>
-
-            <div class="profile-content">
-
-                <h3>ABOUT ME</h3>
-
-                <p>
-                    ゲーム制作を中心に、
-                    C++やDirectXを使用したプログラミングを学んでいます。
-                </p>
-
-                <p>
-                    まだまだ始めたばかりですが、
-                    これから様々な技術を学び、できることを増やしたいです！
-                </p>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- フッター -->
-    <footer>
-
-        <p>
-            © 2026 GAME PROGRAMMER PORTFOLIO
-        </p>
-
-    </footer>
-
-</body>
-
-</html>
+    margin-bottom: 15px;
+}
 ```
