@@ -255,6 +255,87 @@ section h2 {
     font-size: 14px;
 }
 
+```css
+/* =========================
+   WORK DETAIL
+========================= */
+
+.work-detail-section {
+    padding: 120px 10%;
+
+    background: #07191c;
+
+    scroll-margin-top: 80px;
+}
+
+
+/* 詳細情報のカード */
+
+.detail-item {
+    max-width: 900px;
+
+    margin-top: 40px;
+
+    padding: 35px;
+
+    background: #0d292d;
+
+    border: 1px solid #1e666b;
+
+    transition: 0.3s;
+}
+
+
+/* マウスを乗せたとき */
+
+.detail-item:hover {
+    border-color: #39d6c8;
+
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+
+/* タイトル */
+
+.detail-item h3 {
+    color: white;
+
+    font-size: 28px;
+
+    margin-bottom: 10px;
+}
+
+
+/* 見出し */
+
+.detail-item h4 {
+    color: #39d6c8;
+
+    font-size: 16px;
+
+    margin-top: 25px;
+
+    margin-bottom: 5px;
+}
+
+
+/* 説明 */
+
+.detail-item p {
+    color: #b8d5d5;
+
+    margin-bottom: 15px;
+}
+
+
+/* ゲーム種類 */
+
+.detail-item .game-type {
+    color: #39d6c8;
+}
+```
+
 
 
 
