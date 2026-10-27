@@ -1,144 +1,354 @@
-```css
-/* =========================
-   WORKS
-========================= */
+<!DOCTYPE html>
+<html lang="ja">
 
-.work-container {
-    display: grid;
+<head>
+    <meta charset="UTF-8">
 
-    grid-template-columns: repeat(2, 1fr);
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    gap: 30px;
-}
+    <title>Portfolio</title>
 
+    <link rel="stylesheet" href="style.css">
+</head>
 
-/* 作品カード */
+<body>
 
-.work-detail {
-    background: #0d292d;
+    <!-- =========================
+         ヘッダー
+    ========================= -->
 
-    border: 1px solid #1e666b;
+    <header>
 
-    padding: 30px;
+        <div class="logo">
+            PORTFOLIO
+        </div>
 
-    margin-bottom: 30px;
+        <nav>
+            <a href="#top">TOP</a>
+            <a href="#works">WORKS</a>
+            <a href="#profile">PROFILE</a>
+        </nav>
 
-    transition: 0.3s;
-}
-
-.work-detail:hover {
-    transform: translateY(-8px);
-
-    border-color: #39d6c8;
-
-    box-shadow:
-        0 10px 40px rgba(0, 0, 0, 0.4);
-}
+    </header>
 
 
-/* 作品タイトル */
+    <main>
 
-.work-detail h3 {
-    color: white;
+        <!-- =========================
+             TOP
+        ========================= -->
 
-    font-size: 25px;
+        <section class="hero" id="top">
 
-    margin-bottom: 10px;
-}
+            <p class="subtitle">
+                GAME CREATOR
+            </p>
 
+            <h1>
+                PORTFOLIO
+            </h1>
 
-/* ゲーム種類 */
+            <p class="description">
+                ゲーム制作を中心に活動しています。
+            </p>
 
-.game-type {
-    color: #39d6c8;
+            <a href="#works" class="button">
+                VIEW WORKS
+            </a>
 
-    font-size: 15px;
-
-    margin-bottom: 25px;
-}
-
-
-/* 作品情報 */
-
-.work-info {
-    border-top: 1px solid #1e666b;
-
-    padding-top: 20px;
-}
+        </section>
 
 
-/* 見出し */
+        <!-- =========================
+             WORKS
+        ========================= -->
 
-.work-info h4 {
-    color: #39d6c8;
+        <section class="works" id="works">
 
-    font-size: 16px;
+            <h2>
+                WORKS
+            </h2>
 
-    margin-top: 15px;
-
-    margin-bottom: 5px;
-}
-
-
-/* 説明文 */
-
-.work-info p {
-    color: #b8d5d5;
-
-    margin-bottom: 15px;
-}
+            <p class="section-description">
+                これまでに制作したゲーム作品
+            </p>
 
 
-/* =========================
-   WORK DETAIL
-========================= */
+            <div class="work-container">
 
-.work-detail-section {
-    padding: 120px 10%;
 
-    background: #07191c;
-}
+                <!-- 作品1 -->
 
-.detail-item {
-    max-width: 900px;
+                <div class="work-detail">
 
-    margin-top: 40px;
+                    <h3>
+                        ゲーム作品 01
+                    </h3>
 
-    padding: 35px;
+                    <p class="game-type">
+                        3Dアクションゲーム
+                    </p>
 
-    background: #0d292d;
+                    <div class="work-info">
 
-    border: 1px solid #1e666b;
+                        <h4>
+                            制作概要
+                        </h4>
 
-    transition: 0.3s;
-}
+                        <p>
+                            プレイヤーを操作してステージを攻略する
+                            3Dアクションゲームを制作しました。
+                        </p>
 
-.detail-item:hover {
-    border-color: #39d6c8;
 
-    box-shadow:
-        0 10px 40px rgba(0, 0, 0, 0.4);
-}
+                        <h4>
+                            使用技術
+                        </h4>
 
-.detail-item h3 {
-    font-size: 28px;
+                        <p>
+                            C++ / DirectX / Visual Studio
+                        </p>
 
-    margin-bottom: 10px;
-}
 
-.detail-item h4 {
-    color: #39d6c8;
+                        <h4>
+                            担当
+                        </h4>
 
-    margin-top: 25px;
+                        <p>
+                            ゲームプログラム、ステージ制作
+                        </p>
 
-    margin-bottom: 5px;
-}
+                    </div>
 
-.detail-item p {
-    color: #b8d5d5;
-}
+                </div>
 
-.detail-item .game-type {
-    color: #39d6c8;
-}
-```
+
+                <!-- 作品2 -->
+
+                <div class="work-detail">
+
+                    <h3>
+                        ゲーム作品 02
+                    </h3>
+
+                    <p class="game-type">
+                        2Dアクションゲーム
+                    </p>
+
+                    <div class="work-info">
+
+                        <h4>
+                            制作概要
+                        </h4>
+
+                        <p>
+                            プレイヤーを操作して敵や障害物を
+                            避けながら進むゲームを制作しました。
+                        </p>
+
+
+                        <h4>
+                            使用技術
+                        </h4>
+
+                        <p>
+                            C++ / DirectX / Visual Studio
+                        </p>
+
+
+                        <h4>
+                            担当
+                        </h4>
+
+                        <p>
+                            ゲームプログラム、ゲームシステム制作
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             WORK DETAIL
+        ========================= -->
+
+        <section class="work-detail-section">
+
+            <h2>
+                WORK DETAIL
+            </h2>
+
+            <p class="section-description">
+                制作したゲームについて
+            </p>
+
+
+            <div class="detail-item">
+
+                <h3>
+                    ゲーム作品 01
+                </h3>
+
+                <p class="game-type">
+                    3Dアクションゲーム
+                </p>
+
+
+                <h4>
+                    ゲーム概要
+                </h4>
+
+                <p>
+                    プレイヤーを操作してステージを進み、
+                    ゴールを目指す3Dアクションゲームです。
+                </p>
+
+
+                <h4>
+                    制作目的
+                </h4>
+
+                <p>
+                    ゲーム制作を通して、C++によるプログラミングや
+                    DirectXを使用したゲーム開発について学びました。
+                </p>
+
+
+                <h4>
+                    使用技術
+                </h4>
+
+                <p>
+                    C++ / DirectX / Visual Studio
+                </p>
+
+
+                <h4>
+                    担当したこと
+                </h4>
+
+                <p>
+                    プレイヤーの操作、敵の処理、
+                    ステージの制作、当たり判定などを担当しました。
+                </p>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <h3>
+                    ゲーム作品 02
+                </h3>
+
+                <p class="game-type">
+                    2Dアクションゲーム
+                </p>
+
+
+                <h4>
+                    ゲーム概要
+                </h4>
+
+                <p>
+                    プレイヤーを操作して障害物を避けながら
+                    ゴールを目指す2Dアクションゲームです。
+                </p>
+
+
+                <h4>
+                    制作目的
+                </h4>
+
+                <p>
+                    ゲームの基本的な仕組みや、
+                    プレイヤーとオブジェクトの当たり判定について学びました。
+                </p>
+
+
+                <h4>
+                    使用技術
+                </h4>
+
+                <p>
+                    C++ / DirectX / Visual Studio
+                </p>
+
+
+                <h4>
+                    担当したこと
+                </h4>
+
+                <p>
+                    プレイヤーの操作、ステージ制作、
+                    オブジェクトの配置などを担当しました。
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             PROFILE
+        ========================= -->
+
+        <section class="profile" id="profile">
+
+            <h2>
+                PROFILE
+            </h2>
+
+            <p class="section-description">
+                自己紹介
+            </p>
+
+
+            <div class="profile-content">
+
+                <h3>
+                    ABOUT ME
+                </h3>
+
+                <p>
+                    ゲーム制作を学んでいる学生です。
+                    主にC++を使用したゲームプログラミングに
+                    取り組んでいます。
+                </p>
+
+                <br>
+
+                <p>
+                    これまでの制作経験を活かして、
+                    プレイヤーが楽しめるゲームを作ることを目標にしています。
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         フッター
+    ========================= -->
+
+    <footer>
+
+        <p>
+            © 2026 Portfolio
+        </p>
+
+    </footer>
+
+
+</body>
+
+</html>
