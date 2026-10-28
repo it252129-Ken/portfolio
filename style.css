@@ -457,7 +457,11 @@ footer {
     .profile-content {
         padding: 25px;
     }
+}
 
+/* =========================
+   ポンゲームリンク
+========================= */
 
 .game-title {
     color: white;
@@ -467,7 +471,4 @@ footer {
 
 .game-title:hover {
     color: #39d6c8;
-}
-
-   
 }
