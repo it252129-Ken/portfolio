@@ -1,52 +1,289 @@
+/* =========================================================
+   Beyond the goal
+   ========================================================= */
+
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    min-height: 100vh;
-    background: #101426;
-    color: white;
-    font-family: Arial, "Yu Gothic", sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-.game-container {
-    width: min(1000px, 96vw);
+    padding: 40px 20px;
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #182848 0%,
+            #0b1020 45%,
+            #050711 100%
+        );
+
+    color: #ffffff;
+
+    font-family:
+        "Segoe UI",
+        "Yu Gothic",
+        "Meiryo",
+        sans-serif;
+
     text-align: center;
 }
 
+
+/* =========================================================
+   ゲーム全体
+   ========================================================= */
+
+.game-container {
+    width: min(100%, 1050px);
+
+    margin: 0 auto;
+
+    padding: 30px;
+
+    background:
+        rgba(10, 15, 30, 0.9);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.15);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5);
+
+    backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   タイトル
+   ========================================================= */
+
 h1 {
-    margin: 8px 0 2px;
+    margin: 0;
+
+    font-size: 42px;
+
+    letter-spacing: 3px;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 10px rgba(120, 200, 255, 0.5),
+        0 0 25px rgba(120, 200, 255, 0.25);
 }
 
-p {
-    margin: 6px 0;
+.subtitle {
+    margin-top: 8px;
+
+    margin-bottom: 25px;
+
+    color: #9fd8ff;
+
+    font-size: 18px;
+
+    letter-spacing: 4px;
 }
 
-canvas {
+
+/* =========================================================
+   Canvas
+   ========================================================= */
+
+#gameCanvas {
     display: block;
+
     width: 960px;
+
     max-width: 100%;
+
     height: auto;
-    margin: 16px auto;
-    background: midnightblue;
-    border: 2px solid #555;
+
+    margin: 0 auto;
+
+    background: #000000;
+
+    border:
+        2px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 0 25px rgba(0, 0, 0, 0.7);
+
+    image-rendering: auto;
 }
+
+
+/* =========================================================
+   操作説明
+   ========================================================= */
 
 .game-info {
-    font-size: 14px;
-    line-height: 1.5;
+    margin-top: 25px;
+
+    padding: 20px;
+
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    border-radius: 12px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
 }
 
-.game-info a {
-    color: #8fdcff;
+.game-info h2 {
+    margin-top: 0;
+
+    margin-bottom: 18px;
+
+    font-size: 22px;
+
+    color: #9fd8ff;
+}
+
+.game-info p {
+    margin: 7px 0;
+
+    color: #d8dce8;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   キー表示
+   ========================================================= */
+
+.game-info span {
+    display: inline-block;
+
+    min-width: 34px;
+
+    margin: 0 2px;
+
+    padding: 3px 7px;
+
+    background:
+        #202a42;
+
+    border:
+        1px solid #4b5d85;
+
+    border-radius: 5px;
+
+    color: #ffffff;
+
+    font-weight: bold;
+
+    font-size: 13px;
+
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+
+/* =========================================================
+   区切り線
+   ========================================================= */
+
+.game-info hr {
+    margin: 25px auto;
+
+    width: 80%;
+
+    border: none;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.12);
+}
+
+
+/* =========================================================
+   PORTFOLIOへ戻る
+   ========================================================= */
+
+.back-button {
+    display: inline-block;
+
+    padding: 11px 24px;
+
+    border-radius: 8px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2b6cb0,
+            #3182ce
+        );
+
+    color: #ffffff;
+
     text-decoration: none;
+
+    font-weight: bold;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
 
-.game-info a:hover {
-    text-decoration: underline;
+.back-button:hover {
+    transform: translateY(-2px);
+
+    background:
+        linear-gradient(
+            135deg,
+            #3182ce,
+            #4299e1
+        );
+
+    box-shadow:
+        0 8px 20px rgba(49, 130, 206, 0.35);
 }
 
+.back-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   スマートフォン対応
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    body {
+        padding: 20px 10px;
+    }
+
+    .game-container {
+        padding: 18px;
+    }
+
+    h1 {
+        font-size: 30px;
+
+        letter-spacing: 2px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+
+        letter-spacing: 2px;
+    }
+
+    .game-info {
+        padding: 15px;
+    }
+
+    .game-info p {
+        font-size: 13px;
+    }
+}
