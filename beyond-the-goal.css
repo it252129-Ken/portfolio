@@ -1,1 +1,52 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #101426;
+    color: white;
+    font-family: Arial, "Yu Gothic", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game-container {
+    width: min(1000px, 96vw);
+    text-align: center;
+}
+
+h1 {
+    margin: 8px 0 2px;
+}
+
+p {
+    margin: 6px 0;
+}
+
+canvas {
+    display: block;
+    width: 960px;
+    max-width: 100%;
+    height: auto;
+    margin: 16px auto;
+    background: midnightblue;
+    border: 2px solid #555;
+}
+
+.game-info {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.game-info a {
+    color: #8fdcff;
+    text-decoration: none;
+}
+
+.game-info a:hover {
+    text-decoration: underline;
+}
 
