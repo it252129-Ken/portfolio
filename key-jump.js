@@ -279,4 +279,704 @@ function updateGameClear() {
 
     }
 
+
+// =========================
+// 壁判定
+// C++版 IsWall() と同じ
+// =========================
+
+function isWall(x, y) {
+
+    const tx = Math.floor(x / TILE_SIZE);
+    const ty = Math.floor(y / TILE_SIZE);
+
+    // マップ内
+    if (
+        tx >= 0 &&
+        tx < MAP_WIDTH &&
+        ty >= 0 &&
+        ty < MAP_HEIGHT
+    ) {
+
+        return mapData[ty][tx] === 1;
+
+    }
+
+    // マップ下まで行った場合は壁ではない
+    if (ty >= MAP_HEIGHT) {
+
+        return false;
+
+    }
+
+    // マップ外は壁
+    return true;
+
 }
+
+
+// =========================
+// 安全地帯判定
+// C++版 SafeTile() と同じ
+// =========================
+
+function isSafeTile(x, y) {
+
+    const tx = Math.floor(x / TILE_SIZE);
+    const ty = Math.floor(y / TILE_SIZE);
+
+    if (
+        tx >= 0 &&
+        tx < MAP_WIDTH &&
+        ty >= 0 &&
+        ty < MAP_HEIGHT
+    ) {
+
+        return mapData[ty][tx] === 3;
+
+    }
+
+    return false;
+
+}
+
+
+// =========================
+// プレイヤーを初期位置へ戻す
+// =========================
+
+function resetPlayer() {
+
+    player.position.x = 60;
+    player.position.y = 850;
+
+    player.velocityY = 0;
+    player.isGround = false;
+
+}
+
+
+// =========================
+// プレイヤー移動
+// =========================
+
+function updatePlayer(deltaTime) {
+
+    // C++版と同じ
+    let moveSpeed = player.speed;
+
+    // Wで速度2倍
+    if (keys["KeyW"]) {
+
+        moveSpeed *= 2.0;
+
+    }
+
+
+    // =========================
+    // 横移動
+    // =========================
+
+    let moveX = 0;
+
+    if (keys["ArrowLeft"]) {
+
+        moveX -= moveSpeed * deltaTime;
+
+    }
+
+    if (keys["ArrowRight"]) {
+
+        moveX += moveSpeed * deltaTime;
+
+    }
+
+
+    const oldX = player.position.x;
+
+    player.position.x += moveX;
+
+
+    // プレイヤー4隅で壁判定
+
+    if (
+        isWall(player.position.x, player.position.y) ||
+        isWall(
+            player.position.x + player.width,
+            player.position.y
+        ) ||
+        isWall(
+            player.position.x,
+            player.position.y + player.height
+        ) ||
+        isWall(
+            player.position.x + player.width,
+            player.position.y + player.height
+        )
+    ) {
+
+        player.position.x = oldX;
+
+    }
+
+
+    // =========================
+    // ジャンプ
+    // =========================
+
+    const spacePressed =
+        keys["Space"] === true;
+
+    if (
+        spacePressed &&
+        !spacePressedLastFrame &&
+        player.isGround
+    ) {
+
+        player.velocityY = -500;
+
+        player.isGround = false;
+
+    }
+
+
+    spacePressedLastFrame = spacePressed;
+
+
+    // =========================
+    // 重力
+    // =========================
+
+    const gravity = 900;
+
+    player.velocityY += gravity * deltaTime;
+
+
+    const oldY = player.position.y;
+
+    player.position.y +=
+        player.velocityY * deltaTime;
+
+
+    // =========================
+    // 縦方向の壁判定
+    // =========================
+
+    if (
+        isWall(player.position.x, player.position.y) ||
+        isWall(
+            player.position.x + player.width,
+            player.position.y
+        ) ||
+        isWall(
+            player.position.x,
+            player.position.y + player.height
+        ) ||
+        isWall(
+            player.position.x + player.width,
+            player.position.y + player.height
+        )
+    ) {
+
+        // 落下中なら地面に着地
+        if (player.velocityY > 0) {
+
+            player.isGround = true;
+
+        }
+
+        player.position.y = oldY;
+
+        player.velocityY = 0;
+
+    }
+    else {
+
+        player.isGround = false;
+
+    }
+
+
+    // =========================
+    // ゴール判定
+    // =========================
+
+    const centerX =
+        player.position.x + player.width / 2;
+
+    const centerY =
+        player.position.y + player.height / 2;
+
+    if (isSafeTile(centerX, centerY)) {
+
+        scene = Scene.GameClear;
+
+    }
+
+
+    // =========================
+    // 落下判定
+    // =========================
+
+    if (player.position.y > 1200) {
+
+        resetPlayer();
+
+    }
+
+}
+
+
+// =========================
+// 敵の更新
+// =========================
+
+function updateEnemies(deltaTime) {
+
+    for (let i = 0; i < ENEMY_COUNT; i++) {
+
+        const enemy = enemies[i];
+
+        const oldX = enemy.position.x;
+
+
+        // 敵を横に移動
+
+        enemy.position.x +=
+            enemy.speed *
+            enemy.direction *
+            deltaTime;
+
+
+        // 敵自身の4隅をチェック
+
+        if (
+            isWall(
+                enemy.position.x,
+                enemy.position.y
+            ) ||
+            isWall(
+                enemy.position.x + enemy.width,
+                enemy.position.y
+            ) ||
+            isWall(
+                enemy.position.x,
+                enemy.position.y + enemy.height
+            ) ||
+            isWall(
+                enemy.position.x + enemy.width,
+                enemy.position.y + enemy.height
+            )
+        ) {
+
+            // 元の位置へ戻す
+
+            enemy.position.x = oldX;
+
+            // 方向反転
+
+            enemy.direction *= -1;
+
+        }
+
+    }
+
+}
+
+
+// =========================
+// AABB当たり判定
+// =========================
+
+function checkCollision(a, b) {
+
+    return (
+        a.position.x <
+            b.position.x + b.width &&
+
+        a.position.x + a.width >
+            b.position.x &&
+
+        a.position.y <
+            b.position.y + b.height &&
+
+        a.position.y + a.height >
+            b.position.y
+    );
+
+}
+
+
+// =========================
+// プレイヤーと敵
+// =========================
+
+function checkEnemyCollision() {
+
+    for (let i = 0; i < ENEMY_COUNT; i++) {
+
+        const enemy = enemies[i];
+
+        if (checkCollision(player, enemy)) {
+
+            resetPlayer();
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+// =========================
+// ゲーム全体の更新
+// =========================
+
+function update(deltaTime) {
+
+    switch (scene) {
+
+        case Scene.Title:
+
+            updateTitle();
+
+            break;
+
+
+        case Scene.GamePlay:
+
+            updatePlayer(deltaTime);
+
+            updateEnemies(deltaTime);
+
+            checkEnemyCollision();
+
+            break;
+
+
+        case Scene.GameClear:
+
+            updateGameClear();
+
+            break;
+
+    }
+
+}
+
+
+// =========================
+// マップ描画
+// =========================
+
+function drawMap(scale) {
+
+    for (let y = 0; y < MAP_HEIGHT; y++) {
+
+        for (let x = 0; x < MAP_WIDTH; x++) {
+
+            const tile = mapData[y][x];
+
+            if (tile === 0) {
+                continue;
+            }
+
+
+            if (tile === 1) {
+
+                ctx.fillStyle = "#808080";
+
+            }
+            else if (tile === 2) {
+
+                ctx.fillStyle = "#ffff00";
+
+            }
+            else if (tile === 3) {
+
+                ctx.fillStyle = "#00ff00";
+
+            }
+
+
+            ctx.fillRect(
+                x * TILE_SIZE * scale,
+                y * TILE_SIZE * scale,
+                TILE_SIZE * scale,
+                TILE_SIZE * scale
+            );
+
+        }
+
+    }
+
+}
+
+
+// =========================
+// プレイヤー描画
+// =========================
+
+function drawPlayer(scale) {
+
+    ctx.fillStyle = "#ffffff";
+
+    ctx.fillRect(
+        player.position.x * scale,
+        player.position.y * scale,
+        player.width * scale,
+        player.height * scale
+    );
+
+}
+
+
+// =========================
+// 敵描画
+// =========================
+
+function drawEnemies(scale) {
+
+    for (let i = 0; i < ENEMY_COUNT; i++) {
+
+        const enemy = enemies[i];
+
+
+        if (i === 0) {
+
+            ctx.fillStyle = "#ff0000";
+
+        }
+        else if (i === 1) {
+
+            // C++版では透明
+            ctx.fillStyle = "rgba(255,255,0,0)";
+
+        }
+        else if (i === 2) {
+
+            ctx.fillStyle = "#0000ff";
+
+        }
+        else {
+
+            ctx.fillStyle = "#ff00ff";
+
+        }
+
+
+        ctx.fillRect(
+            enemy.position.x * scale,
+            enemy.position.y * scale,
+            enemy.width * scale,
+            enemy.height * scale
+        );
+
+    }
+
+}
+
+
+// =========================
+// タイトル描画
+// =========================
+
+function drawTitle() {
+
+    ctx.fillStyle = "#061b35";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.fillStyle = "#ffff00";
+
+    ctx.font = "bold 70px Arial";
+
+    ctx.textAlign = "center";
+
+    ctx.fillText(
+        "KEY JUMP",
+        canvas.width / 2,
+        180
+    );
+
+
+    ctx.font = "bold 40px Arial";
+
+    ctx.fillText(
+        "START",
+        canvas.width / 2,
+        300
+    );
+
+
+    ctx.font = "bold 30px Arial";
+
+    ctx.fillText(
+        "Q",
+        canvas.width / 2,
+        370
+    );
+
+
+    ctx.font = "20px Arial";
+
+    ctx.fillText(
+        "Qキーでスタート",
+        canvas.width / 2,
+        430
+    );
+
+}
+
+
+// =========================
+// クリア画面
+// =========================
+
+function drawGameClear() {
+
+    ctx.fillStyle = "#000000";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.fillStyle = "#ffff00";
+
+    ctx.textAlign = "center";
+
+
+    ctx.font = "bold 80px Arial";
+
+    ctx.fillText(
+        "CLEAR",
+        canvas.width / 2,
+        200
+    );
+
+
+    ctx.font = "bold 45px Arial";
+
+    ctx.fillText(
+        "TITLE",
+        canvas.width / 2,
+        310
+    );
+
+
+    ctx.font = "bold 35px Arial";
+
+    ctx.fillText(
+        "T",
+        canvas.width / 2,
+        370
+    );
+
+
+    ctx.font = "20px Arial";
+
+    ctx.fillText(
+        "Tキーでタイトルへ",
+        canvas.width / 2,
+        430
+    );
+
+}
+
+
+// =========================
+// 描画
+// =========================
+
+function render() {
+
+    const scale = 0.5;
+
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    if (scene === Scene.Title) {
+
+        drawTitle();
+
+    }
+    else if (scene === Scene.GamePlay) {
+
+        ctx.fillStyle = "#000000";
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        drawMap(scale);
+
+        drawPlayer(scale);
+
+        drawEnemies(scale);
+
+    }
+    else if (scene === Scene.GameClear) {
+
+        drawGameClear();
+
+    }
+
+}
+
+
+// =========================
+// ゲームループ
+// =========================
+
+let lastTime = performance.now();
+
+
+function gameLoop(currentTime) {
+
+    let deltaTime =
+        (currentTime - lastTime) / 1000;
+
+    lastTime = currentTime;
+
+
+    // 暴走防止
+    if (deltaTime > 0.05) {
+
+        deltaTime = 0.05;
+
+    }
+
+
+    update(deltaTime);
+
+    render();
+
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+requestAnimationFrame(gameLoop);
