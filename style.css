@@ -457,4 +457,17 @@ footer {
     .profile-content {
         padding: 25px;
     }
+
+
+.game-title {
+    color: white;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.game-title:hover {
+    color: #39d6c8;
+}
+
+   
 }
