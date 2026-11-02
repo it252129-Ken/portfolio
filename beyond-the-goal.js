@@ -178,7 +178,6 @@ loadImage("glow", "Release/Glow.png");
 class Vector3 {
 
     constructor(x = 0, y = 0) {
-
         this.x = x;
         this.y = y;
     }
@@ -192,7 +191,7 @@ class Player {
 
     constructor() {
 
-        this.position = new Vector3(-20, -1.5, 0);
+        this.position = new Vector3(-20, -1.5);
 
         this.velocityY = 0;
 
@@ -231,10 +230,12 @@ class Player {
             this.position.x -= moveSpeed * dt;
         }
 
-      if (keys["Space"] && player.grounded) {
-    player.velocityY = -player.jumpPower;
-    player.grounded = false;
-　　　}
+     if (keys["Space"] && this.isGrounded) {
+    this.velocityY = -this.jumpPower;
+    this.isGrounded = false;
+}
+
+        this.jumpPower = 12;
 
         // 重力
         this.velocityY -= 25 * dt;
