@@ -177,11 +177,10 @@ loadImage("glow", "Release/Glow.png");
 
 class Vector3 {
 
-    constructor(x = 0, y = 0, z = 0) {
+    constructor(x = 0, y = 0) {
 
         this.x = x;
         this.y = y;
-        this.z = z;
     }
 }
 
@@ -207,7 +206,6 @@ class Player {
         this.position = new Vector3(
             position.x,
             position.y,
-            position.z
         );
         
 　　　　this.previousY = this.position.y;
@@ -233,29 +231,14 @@ class Player {
             this.position.x -= moveSpeed * dt;
         }
 
-        // Z方向
-        if (keys["KeyS"]) {
-            this.position.z += moveSpeed * dt;
-        }
-
-        if (keys["KeyW"]) {
-            // Wは速度アップとして使用
-            // Z移動はS/D/A方式に合わせる
-        }
-
-        // Spaceジャンプ
-        if (
-            isKeyPressed("Space") &&
-            this.isGrounded
-        ) {
-
-            this.velocityY = 10;
-
-            this.isGrounded = false;
-        }
+      if (keys["Space"] && player.grounded) {
+    player.velocityY = -player.jumpPower;
+    player.grounded = false;
+　　　}
 
         // 重力
         this.velocityY -= 25 * dt;
+        
 
         this.position.y += this.velocityY * dt;
     }
@@ -274,7 +257,7 @@ class Player {
         const screen = worldToScreen(
             this.position.x,
             this.position.y,
-            this.position.z
+           
         );
 
         ctx.save();
@@ -949,7 +932,6 @@ function drawWall(
 // World → Screen
 // ============================================================
 
-function worldToScreen(x, y, z) {
 
     // 3D風の簡易投影
     const centerX = SCREEN_WIDTH / 2;
@@ -2378,19 +2360,34 @@ function drawStars() {
 
 function drawGoal() {
 
-    const position =
-        new Vector3(
-            58,
-            3.5,
-            0
-        );
+    const x = 58;
+    const y = 3.5;
 
-    const screen =
-        worldToScreen(
-            position.x,
-            position.y,
-            position.z
-        );
+    const screenX = x - cameraX;
+    const screenY = y;
+
+    ctx.save();
+
+    ctx.fillStyle = "gold";
+
+    ctx.fillRect(
+        screenX - 15,
+        screenY - 30,
+        30,
+        60
+    );
+
+    ctx.fillStyle = "#fff7a0";
+
+    ctx.fillRect(
+        screenX - 8,
+        screenY - 23,
+        16,
+        46
+    );
+
+    ctx.restore();
+}
 
     ctx.save();
 
@@ -2459,9 +2456,8 @@ function drawDarkness() {
 
     ctx.save();
 
-    ctx.fillStyle =
-        rgba(0,0,0,${darkness});
-
+    ctx.fillStyle = `rgba(0,0,0,${darkness})`;
+    
     ctx.fillRect(
         0,
         0,
@@ -2498,10 +2494,10 @@ function drawHUD() {
     ctx.textAlign = "left";
 
     ctx.fillText(
-        STAGE ${stage},
-        25,
-        37
-    );
+    `STAGE ${stage}`,
+    25,
+    37
+);
 
     ctx.restore();
 }
