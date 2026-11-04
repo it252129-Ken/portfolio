@@ -740,6 +740,42 @@ function updateGame(dt) {
     }
 }
 
+
+// ------------------------------
+// ゴール判定
+// ------------------------------
+function updateGoal() {
+    if (stage !== 5) return;
+    if (clearEffect) return;
+
+    const goal = stageData[5].goal;
+
+    // プレイヤーとゴールの当たり判定
+    const playerRight = player.x + player.width;
+    const playerBottom = player.y + player.height;
+
+    const goalLeft = goal.x - 22;
+    const goalRight = goal.x + 22;
+    const goalTop = goal.y;
+    const goalBottom = goal.y + 90;
+
+    const hit =
+        playerRight > goalLeft &&
+        player.x < goalRight &&
+        playerBottom > goalTop &&
+        player.y < goalBottom;
+
+    if (hit && wallOpen) {
+        clearEffect = true;
+        clearBrightness = 0;
+        clearTimer = 0;
+
+        stopSound(audio.walk);
+        playSound(audio.state);
+    }
+}
+
+
 // ------------------------------
 // 描画
 // ------------------------------
