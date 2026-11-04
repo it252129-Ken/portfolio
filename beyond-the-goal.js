@@ -604,14 +604,22 @@ function updateSwitches() {
     }
 }
 
+
 function updateDoor(dt) {
     if (stage === 5) return;
+
     door.update(dt);
-    if (distanceToObject(door.x, door.y + 38) < 75 && isKeyPressed("KeyE") && !changingStage) {
-        if ((stage === 1 || stage === 2 || stage === 5) && !wallOpen) {
+
+    if (
+        distanceToObject(door.x, door.y + 38) < 75 &&
+        isKeyPressed("KeyE") &&
+        !changingStage
+    ) {
+        if ((stage === 1 || stage === 2) && !wallOpen) {
             playSound(audio.button);
             return;
         }
+
         door.open();
         changingStage = true;
     }
@@ -622,65 +630,69 @@ function updateDoor(dt) {
     }
 }
 
-if (stage === 3) {
-    // 消えた足場の復活時間を管理
-    for (const [index, timer] of platformRespawnTimers) {
-        const newTimer = timer - dt;
+// ------------------------------
+// ステージごとのギミック更新
+// ------------------------------
+function updateStageMechanics(dt) {
+    stageTime += dt;
 
-        if (newTimer <= 0) {
-            // 5秒経過したら足場を復活
-            removedPlatforms.delete(index);
-            platformRespawnTimers.delete(index);
-        } else {
-            platformRespawnTimers.set(index, newTimer);
+    // ステージ3：消える足場と5秒後の復活
+    if (stage === 3) {
+
+        // 消えた足場の復活タイマーを更新
+        for (const [index, timer] of platformRespawnTimers) {
+            const newTimer = timer - dt;
+
+            if (newTimer <= 0) {
+                removedPlatforms.delete(index);
+                platformRespawnTimers.delete(index);
+            } else {
+                platformRespawnTimers.set(index, newTimer);
+            }
         }
-    }
 
-    // 一定時間ごとに足場を消す
-    platformTimer += dt;
+        // 2.5秒ごとに足場をランダムで消す
+        platformTimer += dt;
 
-    if (platformTimer > 2.5) {
-        platformTimer = 0;
+        if (platformTimer >= 2.5) {
+            platformTimer = 0;
 
-        const candidates = stageData[3].disappearing;
-
-        // まだ消えていない足場だけを選ぶ
-        const available = candidates.filter(index =>
-            !removedPlatforms.has(index)
-        );
-
-        if (available.length > 0) {
-            const index = available[
-                Math.floor(Math.random() * available.length)
-            ];
-
-            // 足場を消して5秒のタイマーを開始
-            removedPlatforms.add(index);
-            platformRespawnTimers.set(
-                index,
-                PLATFORM_RESPAWN_TIME
-            );
-        }
-    }
-}
-
-
-
-          platformTimer = 0;
             const candidates = stageData[3].disappearing;
-            const index = candidates[Math.floor(Math.random() * candidates.length)];
-            removedPlatforms.add(index);
-            if (removedPlatforms.size >= candidates.length) removedPlatforms.clear();
+
+            // 現在表示されている足場だけを選ぶ
+            const available = candidates.filter(index =>
+                !removedPlatforms.has(index)
+            );
+
+            if (available.length > 0) {
+                const index = available[
+                    Math.floor(Math.random() * available.length)
+                ];
+
+                removedPlatforms.add(index);
+
+                // 5秒後に復活するタイマーを設定
+                platformRespawnTimers.set(
+                    index,
+                    PLATFORM_RESPAWN_TIME
+                );
+            }
         }
     }
 
+    // 敵の移動
     for (const h of obstacles) {
         h.x += h.speed * h.dir * dt;
-        if (h.x < h.min || h.x > h.max) h.dir *= -1;
+
+        if (h.x < h.min || h.x > h.max) {
+            h.dir *= -1;
+        }
     }
 
+    // 隕石の移動
     for (const m of meteors) {
         m.y += m.speed * dt;
+
         if (m.y > SCREEN_HEIGHT + 40) {
             m.y = -30 - Math.random() * 300;
             m.x = cameraX + Math.random() * SCREEN_WIDTH;
@@ -688,13 +700,6 @@ if (stage === 3) {
     }
 }
 
-function updateGoal() {
-    if (stage !== 5) return;
-    const goal = stageData[5].goal;
-    if (distanceToObject(goal.x, goal.y + 35) < 55) {
-        clearEffect = true;
-    }
-}
 
 // ------------------------------
 // 更新
