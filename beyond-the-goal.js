@@ -288,8 +288,10 @@ let switches = [];
 let obstacles = [];
 let meteors = [];
 let removedPlatforms = new Set();
+let platformRespawnTimers = new Map();
 let wallOpen = false;
 let platformTimer = 0;
+const PLATFORM_RESPAWN_TIME = 5;
 
 class Player {
     constructor() {
@@ -454,6 +456,7 @@ function createStageObjects() {
     platformTimer = 0;
     stageTime = 0;
     cameraX = 0;
+    platformRespawnTimers = new Map();
 }
 
 function startGame() {
@@ -619,11 +622,47 @@ function updateDoor(dt) {
     }
 }
 
-function updateStageMechanics(dt) {
-    stageTime += dt;
-    if (stage === 3) {
-        platformTimer += dt;
-        if (platformTimer > 2.5) {
+if (stage === 3) {
+    // 消えた足場の復活時間を管理
+    for (const [index, timer] of platformRespawnTimers) {
+        const newTimer = timer - dt;
+
+        if (newTimer <= 0) {
+            // 5秒経過したら足場を復活
+            removedPlatforms.delete(index);
+            platformRespawnTimers.delete(index);
+        } else {
+            platformRespawnTimers.set(index, newTimer);
+        }
+    }
+
+    // 一定時間ごとに足場を消す
+    platformTimer += dt;
+
+    if (platformTimer > 2.5) {
+        platformTimer = 0;
+
+        const candidates = stageData[3].disappearing;
+
+        // まだ消えていない足場だけを選ぶ
+        const available = candidates.filter(index =>
+            !removedPlatforms.has(index)
+        );
+
+        if (available.length > 0) {
+            const index = available[
+                Math.floor(Math.random() * available.length)
+            ];
+
+            // 足場を消して5秒のタイマーを開始
+            removedPlatforms.add(index);
+            platformRespawnTimers.set(
+                index,
+                PLATFORM_RESPAWN_TIME
+            );
+        }
+    }
+}
 
 
 
