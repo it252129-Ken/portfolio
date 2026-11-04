@@ -234,8 +234,8 @@ const stageData = {
         door: { x: 2070, y: FLOOR_Y - 76 },
         wall: { x: 1280, y: 285, w: 28, h: 135 },
         hazards: [
-            { x: 520, y: 395, min: 500, max: 700, speed: 100, dir: 1 },
-            { x: 1450, y: 395, min: 1350, max: 1660, speed: 125, dir: -1 }
+            { x: 520, y: 390, min: 500, max: 700, speed: 100, dir: 1 },
+            { x: 1450, y: 390, min: 1350, max: 1660, speed: 125, dir: -1 }
         ]
     },
     3: {
