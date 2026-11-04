@@ -1,92 +1,58 @@
 // ============================================================
-// Beyond the goal
-// ブラウザ版 JavaScript
+// Beyond the goal - 2D横スクロール版
+// 操作：Fスタート / A・D移動 / SPACEジャンプ / Qスイッチ
+//       Eドア / Rリトライ / ESCタイトル
 // ============================================================
 
 "use strict";
 
-// ============================================================
-// Canvas
-// ============================================================
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-
 const SCREEN_WIDTH = canvas.width;
 const SCREEN_HEIGHT = canvas.height;
 
-// 元ゲームのワールドサイズ
-const WORLD_WIDTH = 800;
-const WORLD_HEIGHT = 600;
-
-// 描画倍率
-const SCALE_X = SCREEN_WIDTH / WORLD_WIDTH;
-const SCALE_Y = SCREEN_HEIGHT / WORLD_HEIGHT;
-
-// ============================================================
-// ゲーム状態
-// ============================================================
-
+// ------------------------------
+// シーン・ゲーム状態
+// ------------------------------
 const SCENE_TITLE = 0;
 const SCENE_GAME = 1;
 const SCENE_CLEAR = 2;
 
 let currentScene = SCENE_TITLE;
-
 let stage = 1;
-let gameClear = false;
-let changingStage = false;
-
+let cameraX = 0;
+let lastTime = 0;
+let clearTimer = 0;
 let clearEffect = false;
 let clearBrightness = 0;
-let clearTimer = 0;
+let sparkleTime = 0;
+let stageTime = 0;
+let switchOrder = 0;
+let changingStage = false;
 
-let cameraReverse = false;
+const keys = Object.create(null);
+const previousKeys = Object.create(null);
 
-let lastTime = 0;
-
-// ============================================================
-// キー入力
-// ============================================================
-
-const keys = {};
-const previousKeys = {};
+function isKeyPressed(code) {
+    return !!keys[code] && !previousKeys[code];
+}
 
 window.addEventListener("keydown", (event) => {
-
     keys[event.code] = true;
-
-    // ゲーム中のブラウザスクロール防止
-    if (
-        event.code === "Space" ||
-        event.code === "ArrowUp" ||
-        event.code === "ArrowDown" ||
-        event.code === "ArrowLeft" ||
-        event.code === "ArrowRight"
-    ) {
+    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
         event.preventDefault();
     }
 
-    // タイトル
+    if (event.repeat) return;
+
     if (currentScene === SCENE_TITLE && event.code === "KeyF") {
         startGame();
-    }
-
-    // クリア
-    if (currentScene === SCENE_CLEAR) {
-
-        if (event.code === "KeyR") {
-            startGame();
-        }
-
-        if (event.code === "Escape") {
-            currentScene = SCENE_TITLE;
-        }
-    }
-
-    // Escで終了
-    if (currentScene === SCENE_GAME && event.code === "Escape") {
-        currentScene = SCENE_TITLE;
+    } else if (currentScene === SCENE_CLEAR) {
+        if (event.code === "KeyR") startGame();
+        if (event.code === "Escape") returnToTitle();
+    } else if (currentScene === SCENE_GAME) {
+        if (event.code === "Escape") returnToTitle();
+        if (event.code === "KeyR") restartStage();
     }
 });
 
@@ -94,13 +60,22 @@ window.addEventListener("keyup", (event) => {
     keys[event.code] = false;
 });
 
-function isKeyPressed(code) {
-    return keys[code] && !previousKeys[code];
+// ------------------------------
+// 画像・音声
+// ------------------------------
+const images = {};
+function loadImage(name, path) {
+    const img = new Image();
+    img.src = path;
+    images[name] = img;
+    return img;
 }
 
-// ============================================================
-// 音声
-// ============================================================
+loadImage("title", "Release/Title.png");
+loadImage("clear", "Release/Clear.png");
+loadImage("star", "Release/Star.png");
+loadImage("moon", "Release/Moon.png");
+loadImage("sparkle", "Release/Sparkle.png");
 
 const audio = {
     titleBGM: new Audio("Release/Title.wav"),
@@ -115,2534 +90,777 @@ const audio = {
 
 audio.titleBGM.loop = true;
 audio.gameBGM.loop = true;
-
-audio.titleBGM.volume = 0.5;
-audio.gameBGM.volume = 0.5;
 audio.walk.loop = true;
+audio.titleBGM.volume = 0.45;
+audio.gameBGM.volume = 0.45;
 
 function playSound(sound) {
-
+    if (!sound) return;
     try {
         sound.currentTime = 0;
-        sound.play().catch(() => {});
-    }
-    catch (e) {
-    }
+        const promise = sound.play();
+        if (promise && promise.catch) promise.catch(() => {});
+    } catch (_) {}
 }
 
 function stopSound(sound) {
-
+    if (!sound) return;
     try {
         sound.pause();
         sound.currentTime = 0;
+    } catch (_) {}
+}
+
+function stopAllAudio() {
+    Object.values(audio).forEach(stopSound);
+}
+
+// ------------------------------
+// ステージデータ（すべて2D）
+// x,yは足場左上のワールド座標
+// ------------------------------
+const FLOOR_Y = 420;
+
+const stageData = {
+    1: {
+        width: 1900,
+        spawn: { x: 70, y: FLOOR_Y - 42 },
+        platforms: [
+            [0, FLOOR_Y, 430, 80],
+            [500, 370, 150, 24],
+            [700, 320, 150, 24],
+            [900, FLOOR_Y, 340, 80],
+            [1320, 365, 150, 24],
+            [1530, 315, 160, 24],
+            [1740, FLOOR_Y, 160, 80]
+        ],
+        switch: { x: 270, y: FLOOR_Y - 30 },
+        door: { x: 1780, y: FLOOR_Y - 76 },
+        wall: { x: 430, y: 300, w: 28, h: 120 },
+        hazards: []
+    },
+    2: {
+        width: 2200,
+        spawn: { x: 70, y: FLOOR_Y - 42 },
+        platforms: [
+            [0, FLOOR_Y, 300, 80], [350, 370, 150, 24],
+            [560, 330, 150, 24], [770, 370, 150, 24],
+            [980, FLOOR_Y, 300, 80], [1330, 370, 150, 24],
+            [1540, 330, 150, 24], [1750, 370, 150, 24],
+            [1970, FLOOR_Y, 230, 80]
+        ],
+        switches: [
+            { x: 180, y: FLOOR_Y - 30 },
+            { x: 420, y: 340 },
+            { x: 630, y: 300 },
+            { x: 840, y: 340 },
+            { x: 1120, y: FLOOR_Y - 30 }
+        ],
+        door: { x: 2070, y: FLOOR_Y - 76 },
+        wall: { x: 1280, y: 285, w: 28, h: 135 },
+        hazards: [
+            { x: 520, y: 395, min: 500, max: 700, speed: 100, dir: 1 },
+            { x: 1450, y: 395, min: 1350, max: 1660, speed: 125, dir: -1 }
+        ]
+    },
+    3: {
+        width: 1850,
+        spawn: { x: 70, y: FLOOR_Y - 42 },
+        platforms: [
+            [0, FLOOR_Y, 250, 80], [310, 365, 125, 22],
+            [500, 315, 125, 22], [690, 265, 125, 22],
+            [880, 315, 125, 22], [1070, 365, 125, 22],
+            [1260, 315, 125, 22], [1450, FLOOR_Y, 400, 80]
+        ],
+        door: { x: 1650, y: FLOOR_Y - 76 },
+        disappearing: [1, 2, 3, 4, 5, 6],
+        hazards: []
+    },
+    4: {
+        width: 2100,
+        spawn: { x: 70, y: FLOOR_Y - 42 },
+        platforms: [
+            [0, FLOOR_Y, 330, 80], [390, 365, 150, 24],
+            [600, 320, 150, 24], [810, 365, 150, 24],
+            [1020, FLOOR_Y, 300, 80], [1370, 365, 150, 24],
+            [1580, 320, 150, 24], [1790, FLOOR_Y, 310, 80]
+        ],
+        door: { x: 1950, y: FLOOR_Y - 76 },
+        hazards: [],
+        meteors: true
+    },
+    5: {
+        width: 1900,
+        spawn: { x: 70, y: FLOOR_Y - 42 },
+        platforms: [
+            [0, FLOOR_Y, 280, 80], [340, 370, 130, 24],
+            [520, 325, 130, 24], [700, 280, 130, 24],
+            [880, 325, 130, 24], [1060, 370, 130, 24],
+            [1240, FLOOR_Y, 250, 80], [1530, 360, 140, 24],
+            [1720, FLOOR_Y, 180, 80]
+        ],
+        switch: { x: 1320, y: FLOOR_Y - 30 },
+        wall: { x: 1490, y: 280, w: 28, h: 140 },
+        goal: { x: 1815, y: FLOOR_Y - 90 },
+        hazards: []
     }
-    catch (e) {
-    }
-}
+};
 
-function stopAllBGM() {
-
-    stopSound(audio.titleBGM);
-    stopSound(audio.gameBGM);
-}
-
-// ============================================================
-// 画像
-// ============================================================
-
-const images = {};
-
-function loadImage(name, path) {
-
-    const image = new Image();
-
-    image.src = path;
-
-    images[name] = image;
-
-    return image;
-}
-
-loadImage("title", "Release/Title.png");
-loadImage("clear", "Release/Clear.png");
-loadImage("star", "Release/Star.png");
-loadImage("moon", "Release/Moon.png");
-loadImage("sparkle", "Release/Sparkle.png");
-loadImage("white", "Release/White.png");
-loadImage("glow", "Release/Glow.png");
-
-// ============================================================
-// Vector3
-// ============================================================
-
-class Vector3 {
-
-    constructor(x = 0, y = 0) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-// ============================================================
-// Player
-// ============================================================
+let player;
+let door;
+let switches = [];
+let obstacles = [];
+let meteors = [];
+let removedPlatforms = new Set();
+let wallOpen = false;
+let platformTimer = 0;
 
 class Player {
-
     constructor() {
-
-        this.position = new Vector3(-20, -1.5);
-
-        this.velocityY = 0;
-
-        this.speed = 8;
-
-        this.isGrounded = true;
+        this.width = 28;
+        this.height = 42;
+        this.speed = 260;
+        this.jumpPower = 610;
+        this.x = 70;
+        this.y = FLOOR_Y - this.height;
+        this.vx = 0;
+        this.vy = 0;
+        this.grounded = false;
+        this.facing = 1;
+        this.previousY = this.y;
     }
 
     reset(position) {
-
-        this.position = new Vector3(
-            position.x,
-            position.y,
-        );
-        
-　　　　this.previousY = this.position.y;
-        this.isGrounded = false;
+        this.x = position.x;
+        this.y = position.y;
+        this.vx = 0;
+        this.vy = 0;
+        this.grounded = false;
+        this.previousY = this.y;
+        this.facing = 1;
     }
 
     update(dt) {
+        this.previousY = this.y;
+        this.vx = 0;
 
-        this.previousY = this.position.y;
-        let moveSpeed = this.speed;
-
-        // Wで速度アップ
-        if (keys["KeyW"]) {
-            moveSpeed *= 2;
+        if (keys["KeyA"] || keys["ArrowLeft"]) {
+            this.vx = -this.speed;
+            this.facing = -1;
+        }
+        if (keys["KeyD"] || keys["ArrowRight"]) {
+            this.vx = this.speed;
+            this.facing = 1;
         }
 
-        // X方向
-        if (keys["KeyD"]) {
-            this.position.x += moveSpeed * dt;
+        if ((isKeyPressed("Space") || isKeyPressed("ArrowUp")) && this.grounded) {
+            this.vy = -this.jumpPower;
+            this.grounded = false;
+            playSound(audio.button);
         }
 
-        if (keys["KeyA"]) {
-            this.position.x -= moveSpeed * dt;
-        }
+        this.x += this.vx * dt;
+        this.x = Math.max(0, Math.min(stageData[stage].width - this.width, this.x));
 
-     if (keys["Space"] && this.isGrounded) {
-    this.velocityY = -this.jumpPower;
-    this.isGrounded = false;
-}
-
-        this.jumpPower = 12;
-
-        // 重力
-        this.velocityY -= 25 * dt;
-        
-
-        this.position.y += this.velocityY * dt;
-    }
-
-    land(y) {
-
-        this.position.y = y + 1.5;
-
-        this.velocityY = 0;
-
-        this.isGrounded = true;
+        this.vy += 1550 * dt;
+        this.y += this.vy * dt;
     }
 
     draw() {
-
-        const screen = worldToScreen(
-            this.position.x,
-            this.position.y,
-           
-        );
+        const sx = this.x - cameraX;
+        const sy = this.y;
 
         ctx.save();
+        // 影
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.beginPath();
+        ctx.ellipse(sx + this.width / 2, sy + this.height + 3, 17, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx.fillStyle = "white";
+        // プレイヤー本体
+        ctx.fillStyle = "#f3f7ff";
+        ctx.fillRect(sx + 4, sy + 8, this.width - 8, this.height - 8);
+        ctx.fillStyle = "#39d6c8";
+        ctx.fillRect(sx + 2, sy + 18, this.width - 4, 12);
+        ctx.fillStyle = "#142b3b";
+        const eyeX = this.facing > 0 ? sx + 19 : sx + 7;
 
-        ctx.fillRect(
-            screen.x - 10,
-            screen.y - 15,
-            20,
-            20
-        );
-
+          ctx.fillRect(eyeX, sy + 13, 4, 4);
         ctx.restore();
     }
 }
-
-// ============================================================
-// Switch
-// ============================================================
 
 class SwitchObject {
-
-    constructor(x, y, z) {
-
-        this.position = new Vector3(x, y, z);
-
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
         this.pressed = false;
     }
-
+    reset() { this.pressed = false; }
     press() {
-
         this.pressed = true;
-
         playSound(audio.button);
     }
-
-    reset() {
-
-        this.pressed = false;
-    }
-
     draw() {
-
-        const screen = worldToScreen(
-            this.position.x,
-            this.position.y,
-            this.position.z
-        );
-
+        const sx = this.x - cameraX;
         ctx.save();
-
-        ctx.fillStyle = this.pressed
-            ? "#00ff66"
-            : "#ffff00";
-
-        ctx.fillRect(
-            screen.x - 8,
-            screen.y - 5,
-            16,
-            10
-        );
-
+        ctx.fillStyle = this.pressed ? "#42ff91" : "#ffe45c";
+        ctx.fillRect(sx - 13, this.y - 8, 26, 16);
+        ctx.fillStyle = "#fff8c2";
+        ctx.fillRect(sx - 7, this.y - 5, 14, 5);
         ctx.restore();
     }
 }
 
-// ============================================================
-// Door
-// ============================================================
-
 class Door {
-
-    constructor() {
-
-        this.position = new Vector3(90, -1, 0);
-
-        this.openAmount = 0;
-
-        this.isOpening = false;
-
-        this.openSpeed = 1.5;
+    constructor(x, y) {
+        this.setPosition(x, y);
     }
-
-    setPosition(position) {
-
-        this.position = new Vector3(
-            position.x,
-            position.y,
-            position.z
-        );
-
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
         this.openAmount = 0;
-
-        this.isOpening = false;
+        this.opening = false;
     }
-
     open() {
-
-        if (!this.isOpening) {
-
-            this.isOpening = true;
-
+        if (!this.opening && this.openAmount < 1) {
+            this.opening = true;
             playSound(audio.doorOpen);
         }
     }
-
     update(dt) {
-
-        if (!this.isOpening) {
-            return;
-        }
-
-        this.openAmount += this.openSpeed * dt;
-
-        if (this.openAmount >= 1) {
-
-            this.openAmount = 1;
-
-            this.isOpening = false;
-        }
+        if (!this.opening) return;
+        this.openAmount = Math.min(1, this.openAmount + dt * 1.8);
     }
-
-    isOpen() {
-
-        return this.openAmount >= 1;
-    }
-
+    isOpen() { return this.openAmount >= 1; }
     draw() {
-
-        const screen = worldToScreen(
-            this.position.x,
-            this.position.y,
-            this.position.z
-        );
-
-        const offsetZ =
-            this.openAmount * 20;
-
+        const sx = this.x - cameraX;
         ctx.save();
-
-        ctx.fillStyle = "#8B4513";
-
-        ctx.fillRect(
-            screen.x - 15,
-            screen.y - 50,
-            30,
-            80
-        );
-
-        // ドアが開いたように見せる
-        if (this.openAmount > 0) {
-
-            ctx.fillStyle = "#654321";
-
-            ctx.fillRect(
-                screen.x - 15 + offsetZ,
-                screen.y - 50,
-                30,
-                80
-            );
-        }
-
-        ctx.restore();
-    }
-}
-
-// ============================================================
-// MovingObstacle
-// ============================================================
-
-class MovingObstacle {
-
-    constructor(x, y, z, reverse = false) {
-
-        this.position = new Vector3(x, y, z);
-
-        this.startZ = z;
-
-        this.range = 5;
-
-        this.speed = 5;
-
-        this.direction = reverse ? -1 : 1;
-    }
-
-    update(dt) {
-
-        this.position.z +=
-            this.speed *
-            this.direction *
-            dt;
-
-        if (
-            this.position.z >
-            this.startZ + this.range
-        ) {
-
-            this.position.z =
-                this.startZ + this.range;
-
-            this.direction = -1;
-        }
-
-        if (
-            this.position.z <
-            this.startZ - this.range
-        ) {
-
-            this.position.z =
-                this.startZ - this.range;
-
-            this.direction = 1;
-        }
-    }
-
-    draw() {
-
-        const screen = worldToScreen(
-            this.position.x,
-            this.position.y,
-            this.position.z
-        );
-
-        ctx.save();
-
-        ctx.fillStyle = "black";
-
-        // 本体
-        ctx.fillRect(
-            screen.x - 10,
-            screen.y - 10,
-            20,
-            20
-        );
-
-        // トゲ
+        ctx.fillStyle = "#58351f";
+        ctx.fillRect(sx - 20, this.y, 40, 76);
+        ctx.fillStyle = "#b77b3d";
+        ctx.fillRect(sx - 15 + this.openAmount * 27, this.y + 5, 30, 66);
+        ctx.fillStyle = "#ffe18a";
         ctx.beginPath();
-
-        ctx.moveTo(
-            screen.x - 15,
-            screen.y
-        );
-
-        ctx.lineTo(
-            screen.x,
-            screen.y - 25
-        );
-
-        ctx.lineTo(
-            screen.x + 15,
-            screen.y
-        );
-
-        ctx.closePath();
-
+        ctx.arc(sx + 8, this.y + 39, 3, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
     }
 }
 
-// ============================================================
-// Meteor
-// ============================================================
-
-class Meteor {
-
-    constructor(x, y, z) {
-
-        this.startPosition =
-            new Vector3(x, y, z);
-
-        this.position =
-            new Vector3(x, y, z);
-
-        this.fallSpeed = 12;
+function createStageObjects() {
+    const data = stageData[stage];
+    player = new Player();
+    player.reset(data.spawn);
+    const doorPosition = data.door || { x: data.width - 90, y: FLOOR_Y - 76 };
+    door = new Door(doorPosition.x, doorPosition.y);
+    switches = [];
+    if (data.switch) switches.push(new SwitchObject(data.switch.x, data.switch.y));
+    if (data.switches) {
+        data.switches.forEach(s => switches.push(new SwitchObject(s.x, s.y)));
     }
-
-    reset() {
-
-        this.position =
-            new Vector3(
-                this.startPosition.x,
-                this.startPosition.y,
-                this.startPosition.z
-            );
-    }
-
-    update(dt) {
-
-        this.position.y -=
-            this.fallSpeed * dt;
-
-        this.position.x +=
-            24 * dt;
-
-        if (this.position.y < -10) {
-            this.reset();
+    obstacles = (data.hazards || []).map(h => ({ ...h }));
+    meteors = [];
+    if (data.meteors) {
+        for (let i = 0; i < 7; i++) {
+            meteors.push({
+                x: 300 + i * 250,
+                y: -100 - Math.random() * 500,
+                speed: 280 + Math.random() * 180,
+                radius: 9 + Math.random() * 5
+            });
         }
     }
-
-    draw() {
-
-        const screen = worldToScreen(
-            this.position.x,
-            this.position.y,
-            this.position.z
-        );
-
-        ctx.save();
-
-        ctx.fillStyle = "red";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            screen.x,
-            screen.y,
-            8,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-        ctx.restore();
-    }
+    removedPlatforms = new Set();
+    wallOpen = false;
+    switchOrder = 0;
+    changingStage = false;
+    platformTimer = 0;
+    stageTime = 0;
+    cameraX = 0;
 }
-
-// ============================================================
-// Ground
-// ============================================================
-
-const ground = {
-
-    stage3Removed: [false, false, false],
-
-    stage1Platform4Removed: false,
-
-    stage2WallRemoved: false,
-
-    stage5WallRemoved: false,
-
-    stage5Time: 0
-};
-
-function getPlatforms(stageNumber) {
-
-    switch (stageNumber) {
-
-        case 1:
-
-            return [
-
-                [-16, -3, 0, 20, 8],
-                [10, -3, 0, 34, 8],
-                [22, -3, 0, 44, 8],
-
-                [65, -3, 0, 40, 8],
-
-                [90, -3, 0, 14, 24],
-
-                [40, -3, 0, 10, 24],
-
-                [64, -3, 11, 40, 2],
-                [64, -3, -11, 40, 2]
-            ];
-
-        case 2:
-
-            return [
-
-                [-20, -3, 0, 20, 8],
-                [0, -3, 0, 20, 8],
-                [20, -3, 0, 20, 8],
-                [40, -3, 0, 20, 8],
-
-                [-40, -3, 0, 20, 8],
-                [-60, -3, 0, 20, 8],
-                [-80, -3, 0, 20, 8],
-
-                [-100, -3, 0, 20, 40],
-                [-140, -3, 0, 20, 40],
-
-                [-120, -3, 0, 30, 10]
-            ];
-
-        case 3:
-
-            return [
-
-                [-20, -3, 0, 10, 10],
-                [0, -3, 0, 18, 18],
-                [0, -3, 16, 8, 18],
-
-                [13, -3, 8, 16, 8],
-                [13, -3, -8, 16, 8],
-                [-13, -3, -8, 16, 8]
-            ];
-
-        case 4:
-
-            return [
-
-                [-25, -3, -8, 18, 8],
-                [-15, -3, 2, 18, 8],
-                [-3, -3, 9, 18, 8],
-                [10, -3, 12, 18, 8],
-                [23, -3, 8, 18, 8],
-                [35, -3, 0, 18, 8],
-                [45, -3, -8, 18, 8]
-            ];
-
-        case 5:
-
-            return [
-
-                [-20, -3, 0, 20, 8],
-
-                [-5, -3, -6, 10, 4],
-
-                [5, -3, -6, 10, 4],
-
-                [15, -3, -6, 20, 4],
-
-                [25, -2.5, 0, 4, 16],
-
-                [15, -2, 6, 20, 4],
-
-                [5, -1.5, 10, 20, 4],
-
-                [-5, -1.5, 6, 4, 12],
-
-                [-5, -1, 14, 20, 4],
-
-                [15, -0.5, 14, 30, 4],
-
-                [30, 0, 8, 4, 16],
-
-                [40, 0.5, 0, 20, 4],
-
-                [50, 1, 0, 20, 6]
-            ];
-
-        default:
-
-            return [];
-    }
-}
-
-// ============================================================
-// Ground drawing
-// ============================================================
-
-function drawGround() {
-
-    const platforms = getPlatforms(stage);
-
-    ground.stage5Time += 0.016;
-
-    for (let i = 0; i < platforms.length; i++) {
-
-        let p = platforms[i];
-
-        let x = p[0];
-        let y = p[1];
-        let z = p[2];
-
-        const width = p[3];
-        const depth = p[4];
-
-        // Stage 3 removable platforms
-        if (
-            stage === 3 &&
-            i >= 3 &&
-            i <= 5
-        ) {
-
-            const removeIndex = i - 3;
-
-            if (ground.stage3Removed[removeIndex]) {
-                continue;
-            }
-        }
-
-        // Stage 1 platform 4
-        if (
-            stage === 1 &&
-            i === 3 &&
-            ground.stage1Platform4Removed
-        ) {
-            continue;
-        }
-
-        // Stage 5 moving platforms
-        if (stage === 5) {
-
-            if (i === 1) {
-
-                z =
-                    8 +
-                    Math.sin(ground.stage5Time) * 5;
-            }
-
-            if (i === 3) {
-
-                z =
-                    8 +
-                    Math.sin(
-                        ground.stage5Time +
-                        Math.PI
-                    ) * 5;
-            }
-        }
-
-        drawPlatform(
-            x,
-            y,
-            z,
-            width,
-            depth
-        );
-    }
-
-    // Stage 1 wall
-    if (stage === 1) {
-
-        if (!ground.stage2WallRemoved) {
-
-            drawWall(
-                22,
-                -1,
-                0,
-                2,
-                5,
-                8,
-                "#8b0000"
-            );
-        }
-    }
-
-    // Stage 2 wall
-    if (
-        stage === 2 &&
-        !ground.stage2WallRemoved
-    ) {
-
-        drawWall(
-            30,
-            -1,
-            0,
-            2,
-            5,
-            8,
-            "#8b0000"
-        );
-    }
-
-    // Stage 3 wall
-    if (stage === 3) {
-
-        drawWall(
-            0,
-            -1,
-            0,
-            3,
-            5,
-            9,
-            "#550000"
-        );
-    }
-
-    // Stage 5 wall
-    if (
-        stage === 5 &&
-        !ground.stage5WallRemoved
-    ) {
-
-        drawWall(
-            25,
-            0,
-            8,
-            2,
-            5,
-            8,
-            "#550000"
-        );
-    }
-}
-
-function drawPlatform(
-    x,
-    y,
-    z,
-    width,
-    depth
-) {
-
-    const screen = worldToScreen(
-        x,
-        y,
-        z
-    );
-
-    const w =
-        Math.max(
-            10,
-            width * 2
-        );
-
-    const h =
-        Math.max(
-            8,
-            depth * 1.2
-        );
-
-    ctx.save();
-
-    ctx.fillStyle = "#666666";
-
-    ctx.fillRect(
-        screen.x - w / 2,
-        screen.y - h / 2,
-        w,
-        h
-    );
-
-    ctx.strokeStyle = "#888888";
-
-    ctx.strokeRect(
-        screen.x - w / 2,
-        screen.y - h / 2,
-        w,
-        h
-    );
-
-    ctx.restore();
-}
-
-function drawWall(
-    x,
-    y,
-    z,
-    width,
-    height,
-    depth,
-    color
-) {
-
-    const screen = worldToScreen(
-        x,
-        y,
-        z
-    );
-
-    ctx.save();
-
-    ctx.fillStyle = color;
-
-    ctx.fillRect(
-        screen.x - width * 2,
-        screen.y - height * 5,
-        width * 4,
-        height * 10
-    );
-
-    ctx.restore();
-}
-
-// ============================================================
-// World → Screen
-// ============================================================
-
-
-    // 3D風の簡易投影
-    const centerX = SCREEN_WIDTH / 2;
-    const centerY = SCREEN_HEIGHT / 2;
-
-    let cameraX = player.position.x;
-    let cameraZ = player.position.z;
-
-    let dx = x - cameraX;
-    let dz = z - cameraZ;
-
-    if (cameraReverse) {
-        dx *= -1;
-        dz *= -1;
-    }
-
-    const screenX =
-        centerX +
-        dx * 8;
-
-    const screenY =
-        centerY -
-        (y * 8) -
-        dz * 3;
-
-    return {
-        x: screenX,
-        y: screenY
-    };
-}
-
-// ============================================================
-// プレイヤー
-// ============================================================
-
-const player = new Player();
-
-// ============================================================
-// ドア
-// ============================================================
-
-const door = new Door();
-
-// ============================================================
-// スイッチ
-// ============================================================
-
-const switches = [
-
-    new SwitchObject(5, -1.5, 0),
-
-    new SwitchObject(-137, -1.5, 18),
-
-    new SwitchObject(-137, -1.5, -18),
-
-    new SwitchObject(-95, -1.5, -18),
-
-    new SwitchObject(-95, -1.5, 18)
-];
-
-const stage5Switch =
-    new SwitchObject(5, -1, 14);
-
-// ============================================================
-// スイッチ順番
-// ============================================================
-
-let switchOrder = 0;
-
-// ============================================================
-// Moving Obstacles
-// ============================================================
-
-const movingObstacles = [
-
-    new MovingObstacle(
-        -30,
-        -1,
-        0,
-        false
-    ),
-
-    new MovingObstacle(
-        -50,
-        -1,
-        0,
-        true
-    ),
-
-    new MovingObstacle(
-        25,
-        -1,
-        0,
-        true
-    ),
-
-    new MovingObstacle(
-        -100,
-        -1,
-        0,
-        false
-    ),
-
-    new MovingObstacle(
-        15,
-        -1,
-        0,
-        true
-    ),
-
-    new MovingObstacle(
-        -75,
-        -1,
-        0,
-        false
-    )
-];
-
-// ============================================================
-// Meteors
-// ============================================================
-
-const meteors = [
-
-    new Meteor(-20, 15, -8),
-
-    new Meteor(-5, 20, 2),
-
-    new Meteor(10, 18, 9),
-
-    new Meteor(25, 23, 12),
-
-    new Meteor(40, 17, -5)
-];
-
-// ============================================================
-// Stage 3
-// ============================================================
-
-let stage3DoorMoveCount = 0;
-
-let stage3DoorEscapeTimer = 0;
-
-let stage3GoalMoveCount = 0;
-
-// ============================================================
-// Game Start
-// ============================================================
 
 function startGame() {
-
-    stopAllBGM();
-
+    stopAllAudio();
     playSound(audio.state);
-
     currentScene = SCENE_GAME;
-
     stage = 1;
-
-    gameClear = false;
-
-    changingStage = false;
-
     clearEffect = false;
-
     clearBrightness = 0;
-
     clearTimer = 0;
-
-    cameraReverse = false;
-
-    switchOrder = 0;
-
-    stage3DoorMoveCount = 0;
-
-    stage3DoorEscapeTimer = 0;
-
-    stage3GoalMoveCount = 0;
-
-    ground.stage3Removed = [
-        false,
-        false,
-        false
-    ];
-
-    ground.stage1Platform4Removed = false;
-
-    ground.stage2WallRemoved = false;
-
-    ground.stage5WallRemoved = false;
-
-    for (const sw of switches) {
-        sw.reset();
-    }
-
-    stage5Switch.reset();
-
-    player.reset(
-        new Vector3(
-            -20,
-            -1.5,
-            0
-        )
-    );
-
-    door.setPosition(
-        new Vector3(
-            90,
-            -1,
-            0
-        )
-    );
-
-    try {
-
-        audio.gameBGM.currentTime = 0;
-
-        audio.gameBGM.play().catch(() => {});
-
-    }
-    catch (e) {
-    }
+    createStageObjects();
+    playSound(audio.gameBGM);
 }
 
-// ============================================================
-// Stage Change
-// ============================================================
+function restartStage() {
+    stopSound(audio.walk);
+    createStageObjects();
+    playSound(audio.gameBGM);
+}
+
+function returnToTitle() {
+    stopAllAudio();
+    currentScene = SCENE_TITLE;
+    playSound(audio.titleBGM);
+}
 
 function changeStage(nextStage) {
-
+    if (nextStage > 5) {
+        currentScene = SCENE_CLEAR;
+        stopSound(audio.gameBGM);
+        stopSound(audio.walk);
+        return;
+    }
     stage = nextStage;
-
-    changingStage = false;
-
-    switchOrder = 0;
-
-    for (const sw of switches) {
-        sw.reset();
-    }
-
-    stage3DoorMoveCount = 0;
-
-    stage3DoorEscapeTimer = 0;
-
-    if (stage === 2) {
-
-        player.reset(
-            new Vector3(
-                -20,
-                -1.5,
-                0
-            )
-        );
-
-        door.setPosition(
-            new Vector3(
-                40,
-                -1,
-                0
-            )
-        );
-    }
-
-    else if (stage === 3) {
-
-        ground.stage3Removed = [
-            false,
-            false,
-            false
-        ];
-
-        player.reset(
-            new Vector3(
-                -20,
-                -1.5,
-                0
-            )
-        );
-
-        door.setPosition(
-            new Vector3(
-                0,
-                -1,
-                8
-            )
-        );
-    }
-
-    else if (stage === 4) {
-
-        player.reset(
-            new Vector3(
-                -20,
-                -1.5,
-                0
-            )
-        );
-
-        door.setPosition(
-            new Vector3(
-                44,
-                -1,
-                -8
-            )
-        );
-    }
-
-    else if (stage === 5) {
-
-        player.reset(
-            new Vector3(
-                -20,
-                -1.5,
-                0
-            )
-        );
-
-        door.setPosition(
-            new Vector3(
-                -20,
-                -1,
-                0
-            )
-        );
-
-        ground.stage5WallRemoved = false;
-
-        stage5Switch.reset();
-    }
+    createStageObjects();
 }
 
-// ============================================================
-// Distance
-// ============================================================
-
-function distance3D(a, b) {
-
-    const dx =
-        a.x - b.x;
-
-    const dy =
-        a.y - b.y;
-
-    const dz =
-        a.z - b.z;
-
-    return Math.sqrt(
-        dx * dx +
-        dy * dy +
-        dz * dz
-    );
+function distanceToObject(x, y) {
+    const px = player.x + player.width / 2;
+    const py = player.y + player.height / 2;
+    return Math.hypot(px - x, py - y);
 }
 
-// ============================================================
-// Collision
-// ============================================================
-
+// ------------------------------
+// 当たり判定
+// ------------------------------
+function getActivePlatforms() {
+    return stageData[stage].platforms
+        .map((p, index) => ({ x: p[0], y: p[1], w: p[2], h: p[3], index }))
+        .filter(p => !removedPlatforms.has(p.index));
+}
 
 function checkPlatformCollision() {
+    player.grounded = false;
+    const oldBottom = player.previousY + player.height;
+    const newBottom = player.y + player.height;
 
-    const platforms = getPlatforms(stage);
-
-    for (let i = 0; i < platforms.length; i++) {
-
-        const p = platforms[i];
-
-        // 消えた足場は判定しない
-        if (
-            stage === 3 &&
-            i >= 3 &&
-            i <= 5 &&
-            ground.stage3Removed[i - 3]
-        ) {
-            continue;
-        }
-
-        if (
-            stage === 1 &&
-            i === 3 &&
-            ground.stage1Platform4Removed
-        ) {
-            continue;
-        }
-
-        let x = p[0];
-        const y = p[1];
-        let z = p[2];
-
-        const width = p[3];
-        const depth = p[4];
-
-        // ステージ5の移動足場
-        if (stage === 5) {
-            if (i === 1) {
-                z = 8 + Math.sin(ground.stage5Time) * 5;
-            }
-
-            if (i === 3) {
-                z = 8 + Math.sin(
-                    ground.stage5Time + Math.PI
-                ) * 5;
-            }
-        }
-
-        const insideX =
-            Math.abs(player.position.x - x) <= width / 2;
-
-        const insideZ =
-            Math.abs(player.position.z - z) <= depth / 2;
-
-        if (!insideX || !insideZ) {
-            continue;
-        }
-
-        // 足場の上面
-        const platformTop = y + 1.5;
-
-        // 前フレームでは上面より上にいて、
-        // 今フレームで上面以下に降りてきた場合に着地
-        const crossedPlatform =
-            player.previousY >= platformTop &&
-            player.position.y <= platformTop;
-
-        if (
-            player.velocityY <= 0 &&
-            crossedPlatform
-        ) {
-            player.land(y);
-            return true;
+    for (const p of getActivePlatforms()) {
+        const overlapsX = player.x + player.width > p.x && player.x < p.x + p.w;
+        const crossedTop = oldBottom <= p.y + 8 && newBottom >= p.y && player.vy >= 0;
+        if (overlapsX && crossedTop) {
+            player.y = p.y - player.height;
+            player.vy = 0;
+            player.grounded = true;
+            break;
         }
     }
-
-    return false;
 }
-
-
-// ============================================================
-// Wall collision
-// ============================================================
 
 function checkWallCollision() {
+    const wall = stageData[stage].wall;
+    if (!wall || wallOpen) return;
 
-    // Stage 1
-    if (stage === 1) {
+    const overlaps = player.x + player.width > wall.x &&
+        player.x < wall.x + wall.w &&
+        player.y + player.height > wall.y &&
+        player.y < wall.y + wall.h;
 
-        if (!ground.stage2WallRemoved) {
-
-            if (
-                Math.abs(
-                    player.position.x - 22
-                ) < 2 &&
-                Math.abs(
-                    player.position.z
-                ) < 4.5 &&
-                player.position.y < 1.5
-            ) {
-
-                if (
-                    player.position.x > 22
-                ) {
-                    player.position.x = 24;
-                }
-                else {
-                    player.position.x = 20;
-                }
-            }
-        }
-    }
-
-    // Stage 2
-    if (stage === 2) {
-
-        if (!ground.stage2WallRemoved) {
-
-            if (
-                Math.abs(
-                    player.position.x - 30
-                ) < 2 &&
-                Math.abs(
-                    player.position.z
-                ) < 4
-            ) {
-
-                if (
-                    player.position.x > 30
-                ) {
-                    player.position.x = 32;
-                }
-                else {
-                    player.position.x = 28;
-                }
-            }
-        }
-    }
-
-    // Stage 3
-    if (stage === 3) {
-
-        if (
-            stage3DoorMoveCount < 3
-        ) {
-
-            if (
-                Math.abs(player.position.x) < 1.5 &&
-                Math.abs(player.position.z) < 4.5 &&
-                player.position.y < 3
-            ) {
-
-                if (player.position.x > 0) {
-                    player.position.x = 2;
-                }
-                else {
-                    player.position.x = -2;
-                }
-            }
-        }
+    if (overlaps) {
+        if (player.vx > 0) player.x = wall.x - player.width;
+        else if (player.vx < 0) player.x = wall.x + wall.w;
     }
 }
 
-// ============================================================
-// Moving obstacle collision
-// ============================================================
-
-function checkObstacleCollision() {
-
-    if (stage !== 2) {
-        return;
-    }
-
-    for (const obstacle of movingObstacles) {
-
-        const dx =
-            player.position.x -
-            obstacle.position.x;
-
-        const dz =
-            player.position.z -
-            obstacle.position.z;
-
-        const distance =
-            Math.sqrt(
-                dx * dx +
-                dz * dz
-            );
-
-        if (distance < 2.5) {
-
-            playSound(audio.falling);
-
-            player.reset(
-                new Vector3(
-                    -20,
-                    -1.5,
-                    0
-                )
-            );
-        }
-    }
-}
-
-// ============================================================
-// Fall
-// ============================================================
-
-function checkFall() {
-
-    if (player.position.y >= -10) {
-        return;
-    }
-
+function respawn() {
     playSound(audio.falling);
-
-    if (stage === 1) {
-
-        player.reset(
-            new Vector3(
-                4,
-                -1.5,
-                0
-            )
-        );
-    }
-    else {
-
-        player.reset(
-            new Vector3(
-                -20,
-                -1.5,
-                0
-            )
-        );
-    }
+    player.reset(stageData[stage].spawn);
 }
 
-// ============================================================
-// Switch
-// ============================================================
-
-function updateSwitches() {
-
-    // Stage 1 switch
-    if (stage === 1) {
-
-        if (
-            distance3D(
-                player.position,
-                switches[0].position
-            ) < 2.5 &&
-            isKeyPressed("KeyQ") &&
-            !switches[0].pressed
-        ) {
-
-            switches[0].press();
-
-            ground.stage2WallRemoved = true;
-
-            playSound(audio.open);
+function checkHazardCollisions() {
+    for (const h of obstacles) {
+        if (Math.abs((player.x + player.width / 2) - h.x) < 24 &&
+            Math.abs((player.y + player.height) - h.y) < 30) {
+            respawn();
         }
     }
 
-    // Stage 2 switches
+    for (const m of meteors) {
+        if (Math.hypot(player.x + player.width / 2 - m.x, player.y + player.height / 2 - m.y) < m.radius + 17) {
+            respawn();
+            m.y = -100;
+        }
+    }
+}
+
+// ------------------------------
+// スイッチ・ドア・ゴール
+// ------------------------------
+function updateSwitches() {
+    if (!isKeyPressed("KeyQ")) return;
+
+    if (stage === 1 && switches[0] && !switches[0].pressed &&
+        distanceToObject(switches[0].x, switches[0].y) < 65) {
+        switches[0].press();
+        wallOpen = true;
+        playSound(audio.open);
+    }
+
     if (stage === 2) {
-
-        for (let i = 0; i < 5; i++) {
-
+        for (let i = 0; i < switches.length; i++) {
             const sw = switches[i];
-
-            if (
-                distance3D(
-                    player.position,
-                    sw.position
-                ) < 2.5 &&
-                isKeyPressed("KeyQ") &&
-                !sw.pressed
-            ) {
-
+            if (!sw.pressed && distanceToObject(sw.x, sw.y) < 65) {
                 if (i === switchOrder) {
-
                     sw.press();
-
                     switchOrder++;
-
-                }
-                else {
-
-                    switchOrder = 0;
-
-                    for (const s of switches) {
-                        s.reset();
+                    if (switchOrder === switches.length) {
+                        wallOpen = true;
+                        playSound(audio.open);
                     }
-
+                } else {
+                    switchOrder = 0;
+                    switches.forEach(s => s.reset());
                     playSound(audio.button);
                 }
-
-                if (switchOrder >= 5) {
-
-                    ground.stage2WallRemoved = true;
-
-                    playSound(audio.open);
-                }
+                break;
             }
         }
     }
 
-    // Stage 5 switch
-    if (stage === 5) {
-
-        if (
-            !ground.stage5WallRemoved &&
-            distance3D(
-                player.position,
-                stage5Switch.position
-            ) < 2.5 &&
-            isKeyPressed("KeyQ")
-        ) {
-
-            stage5Switch.press();
-
-            ground.stage5WallRemoved = true;
-
-            playSound(audio.open);
-        }
+    if (stage === 5 && switches[0] && !switches[0].pressed &&
+        distanceToObject(switches[0].x, switches[0].y) < 65) {
+        switches[0].press();
+        wallOpen = true;
+        playSound(audio.open);
     }
 }
 
-// ============================================================
-// Door
-// ============================================================
-
 function updateDoor(dt) {
-
+    if (stage === 5) return;
     door.update(dt);
-
-    // Stage 3 special door
-    if (stage === 3) {
-
-        if (
-            distance3D(
-                player.position,
-                door.position
-            ) < 5
-        ) {
-
-            stage3DoorEscapeTimer += dt;
-
-            if (
-                stage3DoorEscapeTimer >= 0.5
-            ) {
-
-                stage3DoorEscapeTimer = 0;
-
-                if (
-                    stage3DoorMoveCount < 3
-                ) {
-
-                    const positions = [
-
-                        new Vector3(
-                            13,
-                            -1,
-                            8
-                        ),
-
-                        new Vector3(
-                            13,
-                            -1,
-                            -8
-                        ),
-
-                        new Vector3(
-                            -13,
-                            -1,
-                            -8
-                        )
-                    ];
-
-                    door.setPosition(
-                        positions[
-                            stage3DoorMoveCount
-                        ]
-                    );
-
-                    stage3DoorMoveCount++;
-                }
-            }
-        }
-    }
-
-    // Eでドアを開く
-    if (
-        distance3D(
-            player.position,
-            door.position
-        ) < 2.5 &&
-        isKeyPressed("KeyE") &&
-        !changingStage
-    ) {
-
-        // Stage 3特殊処理
-        if (
-            stage === 3 &&
-            stage3DoorMoveCount >= 3
-        ) {
-
-            changeStage(4);
-
+    if (distanceToObject(door.x, door.y + 38) < 75 && isKeyPressed("KeyE") && !changingStage) {
+        if ((stage === 1 || stage === 2 || stage === 5) && !wallOpen) {
+            playSound(audio.button);
             return;
         }
-
         door.open();
-
         changingStage = true;
     }
 
-    // ドアが開いた
-    if (
-        changingStage &&
-        door.isOpen()
-    ) {
-
-        if (stage === 1) {
-
-            changeStage(2);
-        }
-
-        else if (stage === 2) {
-
-            changeStage(3);
-        }
-
-        else if (stage === 3) {
-
-            changeStage(4);
-        }
-
-        else if (stage === 4) {
-
-            changeStage(5);
-        }
+    if (changingStage && door.isOpen()) {
+        changingStage = false;
+        changeStage(stage + 1);
     }
 }
 
-// ============================================================
-// Goal
-// ============================================================
+function updateStageMechanics(dt) {
+    stageTime += dt;
+    if (stage === 3) {
+        platformTimer += dt;
+        if (platformTimer > 2.5) {
+            platformTimer = 0;
+            const candidates = stageData[3].disappearing;
+            const index = candidates[Math.floor(Math.random() * candidates.length)];
+            removedPlatforms.add(index);
+            if (removedPlatforms.size >= candidates.length) removedPlatforms.clear();
+        }
+    }
+
+    for (const h of obstacles) {
+        h.x += h.speed * h.dir * dt;
+        if (h.x < h.min || h.x > h.max) h.dir *= -1;
+    }
+
+    for (const m of meteors) {
+        m.y += m.speed * dt;
+        if (m.y > SCREEN_HEIGHT + 40) {
+            m.y = -30 - Math.random() * 300;
+            m.x = cameraX + Math.random() * SCREEN_WIDTH;
+        }
+    }
+}
 
 function updateGoal() {
+    if (stage !== 5) return;
 
-    if (stage !== 5) {
-        return;
-    }
 
-    const goalPosition =
-        new Vector3(
-            58,
-            3.5,
-            0
-        );
 
-    if (
-        distance3D(
-            player.position,
-            goalPosition
-        ) < 2.5 &&
-        !clearEffect
-    ) {
 
+
+    const goal = stageData[5].goal;
+    if (distanceToObject(goal.x, goal.y + 35) < 55) {
         clearEffect = true;
-
-        clearBrightness = 0;
-
-        clearTimer = 0;
     }
 }
 
-// ============================================================
-// Clear effect
-// ============================================================
-
-function updateClearEffect(dt) {
-
-    if (!clearEffect) {
-        return false;
-    }
-
-    clearBrightness +=
-        dt * 0.8;
-
-    if (clearBrightness >= 1) {
-
-        clearBrightness = 1;
-
-        clearTimer += dt;
-
-        if (clearTimer >= 1) {
-
-            gameClear = true;
-
-            currentScene = SCENE_CLEAR;
-
-            stopSound(audio.gameBGM);
-
-            return true;
-        }
-    }
-
-    return true;
-}
-
-// ============================================================
-// Stage 3 platform removal
-// ============================================================
-
-function updateStage3Platforms() {
-
-    if (stage !== 3) {
-        return;
-    }
-
-    // 落下した場合、ランダムに足場を消す
-    if (
-        player.position.y < -10
-    ) {
-
-        const index =
-            Math.floor(
-                Math.random() * 3
-            );
-
-        ground.stage3Removed[index] = true;
-    }
-}
-
-// ============================================================
-// Stage 1 platform removal
-// ============================================================
-
-function updateStage1Platform() {
-
-    if (stage !== 1) {
-        return;
-    }
-
-    if (
-        player.position.x >= 58 &&
-        player.position.x <= 72 &&
-        player.position.y < -5
-    ) {
-
-        ground.stage1Platform4Removed = true;
-    }
-}
-
-// ============================================================
-// Update Game
-// ============================================================
-
+// ------------------------------
+// 更新
+// ------------------------------
 function updateGame(dt) {
-
-    if (updateClearEffect(dt)) {
+    if (clearEffect) {
+        clearBrightness = Math.min(1, clearBrightness + dt * 0.8);
+        if (clearBrightness >= 1) {
+            clearTimer += dt;
+            if (clearTimer > 1.1) {
+                currentScene = SCENE_CLEAR;
+                stopSound(audio.gameBGM);
+                stopSound(audio.walk);
+            }
+        }
         return;
     }
 
-    // カメラ反転
-    if (isKeyPressed("KeyR")) {
-
-        cameraReverse =
-            !cameraReverse;
-    }
-
-    // Player
     player.update(dt);
-
-    // Ground
     checkPlatformCollision();
-
-    // Wall
     checkWallCollision();
 
-    // Stage 2 obstacle
-    if (stage === 2) {
+    if (player.y > SCREEN_HEIGHT + 250) respawn();
 
-        for (const obstacle of movingObstacles) {
-            obstacle.update(dt);
-        }
-
-        checkObstacleCollision();
-    }
-
-    // Stage 4 meteor
-    if (stage === 4) {
-
-        for (const meteor of meteors) {
-            meteor.update(dt);
-        }
-    }
-
-    // Fall
-    checkFall();
-
-    // Stage platform logic
-    updateStage3Platforms();
-
-    updateStage1Platform();
-
-    // Switch
+    updateStageMechanics(dt);
+    checkHazardCollisions();
     updateSwitches();
-
-    // Door
     updateDoor(dt);
-
-    // Goal
     updateGoal();
 
-    // Walking sound
-    const moving =
-        keys["KeyA"] ||
-        keys["KeyD"] ||
-        keys["KeyS"] ||
-        keys["KeyW"];
+    const targetCamera = player.x + player.width / 2 - SCREEN_WIDTH * 0.38;
+    cameraX += (targetCamera - cameraX) * Math.min(1, dt * 6);
+    cameraX = Math.max(0, Math.min(stageData[stage].width - SCREEN_WIDTH, cameraX));
 
-    if (moving) {
-
-        if (
-            audio.walk.paused
-        ) {
-
-            playSound(audio.walk);
-        }
-    }
-    else {
-
+    if (Math.abs(player.vx) > 0 && player.grounded) {
+        if (audio.walk.paused) playSound(audio.walk);
+    } else {
         stopSound(audio.walk);
     }
 }
 
-// ============================================================
-// Draw Title
-// ============================================================
-
-function drawTitle() {
-
-    ctx.clearRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    // 背景
-    ctx.fillStyle = "#10182f";
-
-    ctx.fillRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    // タイトル画像
-    if (
-        images.title.complete &&
-        images.title.naturalWidth > 0
-    ) {
-
-        ctx.drawImage(
-            images.title,
-            0,
-            0,
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT
-        );
-    }
-
-    else {
-
-        ctx.fillStyle = "white";
-
-        ctx.textAlign = "center";
-
-        ctx.font =
-            "bold 42px sans-serif";
-
-        ctx.fillText(
-            "ゴールのその先へ",
-            SCREEN_WIDTH / 2,
-            180
-        );
-    }
-
-    // Sparkle
-    drawSparkles();
-
-    // Fキー
-    ctx.textAlign = "center";
-
-    ctx.fillStyle = "white";
-
-    ctx.font =
-        "bold 24px sans-serif";
-
-    ctx.fillText(
-        "Fキーでスタート",
-        SCREEN_WIDTH / 2,
-        SCREEN_HEIGHT - 80
-    );
-}
-
-// ============================================================
-// Sparkles
-// ============================================================
-
-let sparkleTime = 0;
-
-const sparklePositions = [
-
-    [150, 100],
-    [300, 250],
-    [500, 120],
-    [700, 300],
-    [820, 150]
-];
-
-function drawSparkles() {
-
-    sparkleTime += 0.016;
-
-    for (
-        let i = 0;
-        i < sparklePositions.length;
-        i++
-    ) {
-
-        const pos =
-            sparklePositions[i];
-
-        const alpha =
-            0.3 +
-            0.7 *
-            (
-                0.5 +
-                0.5 *
-                Math.sin(
-                    sparkleTime * 2 + i
-                )
-            );
-
-        const y =
-            pos[1] +
-            Math.sin(
-                sparkleTime + i
-            ) * 10;
-
-        ctx.save();
-
-        ctx.globalAlpha = alpha;
-
-        if (
-            images.sparkle.complete &&
-            images.sparkle.naturalWidth > 0
-        ) {
-
-            ctx.drawImage(
-                images.sparkle,
-                pos[0] - 15,
-                y - 15,
-                30,
-                30
-            );
-        }
-        else {
-
-            ctx.fillStyle = "white";
-
-            ctx.fillRect(
-                pos[0] - 2,
-                y - 10,
-                4,
-                20
-            );
-
-            ctx.fillRect(
-                pos[0] - 10,
-                y - 2,
-                20,
-                4
-            );
-        }
-
-        ctx.restore();
-    }
-}
-
-// ============================================================
-// Draw Game
-// ============================================================
-
-function drawGame() {
-
-    // 背景
-    ctx.fillStyle = "#061020";
-
-    ctx.fillRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    // Stage背景
-    drawStageBackground();
-
-    // Ground
-    drawGround();
-
-    // Stage 2 obstacles
-    if (stage === 2) {
-
-        for (const obstacle of movingObstacles) {
-            obstacle.draw();
-        }
-    }
-
-    // Stage 4 meteor
-    if (stage === 4) {
-
-        for (const meteor of meteors) {
-            meteor.draw();
-        }
-    }
-
-    // Switches
-    if (stage === 1) {
-
-        switches[0].draw();
-    }
-
-    if (stage === 2) {
-
-        for (const sw of switches) {
-            sw.draw();
-        }
-    }
-
-    if (stage === 5) {
-
-        drawGoal();
-
-        stage5Switch.draw();
-    }
-
-    // Door
-    door.draw();
-
-    // Player
-    player.draw();
-
-    // Darkness
-    drawDarkness();
-
-    // HUD
-    drawHUD();
-}
-
-// ============================================================
-// Background
-// ============================================================
-
-function drawStageBackground() {
-
-    let gradient;
-
-    if (stage === 1) {
-
-        gradient =
-            ctx.createLinearGradient(
-                0,
-                0,
-                0,
-                SCREEN_HEIGHT
-            );
-
-        gradient.addColorStop(
-            0,
-            "#315b85"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#111827"
-        );
-    }
-
-    else if (stage === 2) {
-
-        gradient =
-            ctx.createLinearGradient(
-                0,
-                0,
-                0,
-                SCREEN_HEIGHT
-            );
-
-        gradient.addColorStop(
-            0,
-            "#1d3557"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#090d18"
-        );
-    }
-
-    else if (stage === 3) {
-
-        gradient =
-            ctx.createLinearGradient(
-                0,
-                0,
-                0,
-                SCREEN_HEIGHT
-            );
-
-        gradient.addColorStop(
-            0,
-            "#111827"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#020617"
-        );
-    }
-
-    else if (stage === 4) {
-
-        gradient =
-            ctx.createLinearGradient(
-                0,
-                0,
-                0,
-                SCREEN_HEIGHT
-            );
-
-        gradient.addColorStop(
-            0,
-            "#090b1a"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#02020a"
-        );
-    }
-
-    else {
-
-        gradient =
-            ctx.createLinearGradient(
-                0,
-                0,
-                0,
-                SCREEN_HEIGHT
-            );
-
-        gradient.addColorStop(
-            0,
-            "#02030a"
-        );
-
-        gradient.addColorStop(
-            1,
-            "#000000"
-        );
-    }
-
+// ------------------------------
+// 描画
+// ------------------------------
+function drawBackground() {
+    const colors = {
+        1: ["#315b85", "#111827"],
+        2: ["#1d3557", "#090d18"],
+        3: ["#111827", "#020617"],
+        4: ["#090b1a", "#02020a"],
+        5: ["#02030a", "#000000"]
+    };
+    const gradient = ctx.createLinearGradient(0, 0, 0, SCREEN_HEIGHT);
+    gradient.addColorStop(0, colors[stage][0]);
+    gradient.addColorStop(1, colors[stage][1]);
     ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    ctx.fillRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    // Moon
-    if (
-        stage >= 3 &&
-        images.moon.complete &&
-        images.moon.naturalWidth > 0
-    ) {
-
-        ctx.globalAlpha = 0.9;
-
-        ctx.drawImage(
-            images.moon,
-            SCREEN_WIDTH - 150,
-            20,
-            100,
-            100
-        );
-
+    // 遠景の星
+    if (stage >= 3) {
+        for (let i = 0; i < 45; i++) {
+            const x = ((i * 173 - cameraX * 0.15) % (SCREEN_WIDTH + 40) + SCREEN_WIDTH + 40) % (SCREEN_WIDTH + 40);
+            const y = (i * 67) % 260;
+            ctx.globalAlpha = 0.35 + 0.45 * Math.sin(stageTime * 2 + i);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x, y, 2, 2);
+        }
         ctx.globalAlpha = 1;
     }
 
-    // 星
-    if (stage >= 3) {
+    if (stage >= 3 && images.moon && images.moon.complete && images.moon.naturalWidth > 0) {
+        ctx.globalAlpha = 0.8;
+        ctx.drawImage(images.moon, SCREEN_WIDTH - 145, 28, 95, 95);
+        ctx.globalAlpha = 1;
+    }
 
-        drawStars();
+    // 背景の遠い山
+    ctx.fillStyle = "rgba(5,12,28,0.35)";
+    ctx.beginPath();
+    ctx.moveTo(0, 390);
+    for (let x = 0; x <= SCREEN_WIDTH + 100; x += 100) {
+        ctx.lineTo(x, 300 + Math.sin((x + cameraX * 0.2) * 0.008) * 35);
+    }
+    ctx.lineTo(SCREEN_WIDTH, SCREEN_HEIGHT);
+    ctx.lineTo(0, SCREEN_HEIGHT);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawPlatforms() {
+    for (const p of getActivePlatforms()) {
+        const x = p.x - cameraX;
+        if (x + p.w < -20 || x > SCREEN_WIDTH + 20) continue;
+
+        ctx.fillStyle = "#394b60";
+        ctx.fillRect(x, p.y, p.w, p.h);
+        ctx.fillStyle = "#39d6c8";
+        ctx.fillRect(x, p.y, p.w, 6);
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.fillRect(x + 8, p.y + 12, Math.max(0, p.w - 16), 3);
     }
 }
 
-// ============================================================
-// Stars
-// ============================================================
+function drawWall() {
+    const wall = stageData[stage].wall;
+    if (!wall || wallOpen) return;
+    const x = wall.x - cameraX;
+    ctx.fillStyle = "#7d2832";
+    ctx.fillRect(x, wall.y, wall.w, wall.h);
+    ctx.fillStyle = "#e05b62";
+    ctx.fillRect(x + 5, wall.y, 5, wall.h);
+}
 
-function drawStars() {
+function drawHazards() {
+    for (const h of obstacles) {
+        const x = h.x - cameraX;
+        ctx.fillStyle = "#16191f";
+        ctx.fillRect(x - 18, h.y - 18, 36, 18);
+        ctx.fillStyle = "#ff4c5b";
+        ctx.beginPath();
+        ctx.moveTo(x - 22, h.y - 18);
+        ctx.lineTo(x, h.y - 42);
+        ctx.lineTo(x + 22, h.y - 18);
+        ctx.closePath();
+        ctx.fill();
+    }
 
-    const stars = [
-
-        [70, 50],
-        [180, 100],
-        [300, 40],
-        [430, 90],
-        [560, 50],
-        [690, 120],
-        [800, 60],
-        [150, 220],
-        [480, 200],
-        [650, 250]
-    ];
-
-    for (const star of stars) {
-
-        if (
-            images.star.complete &&
-            images.star.naturalWidth > 0
-        ) {
-
-            ctx.drawImage(
-                images.star,
-                star[0],
-                star[1],
-                18,
-                18
-            );
-        }
-        else {
-
-            ctx.fillStyle = "white";
-
-            ctx.fillRect(
-                star[0],
-                star[1],
-                3,
-                3
-            );
-        }
+    for (const m of meteors) {
+        const x = m.x - cameraX;
+        ctx.fillStyle = "rgba(255,100,45,0.2)";
+        ctx.beginPath();
+        ctx.arc(x, m.y, m.radius * 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff673d";
+        ctx.beginPath();
+        ctx.arc(x, m.y, m.radius, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
-// ============================================================
-// Goal
-// ============================================================
+function drawSwitches() {
+    switches.forEach(sw => sw.draw());
+}
 
 function drawGoal() {
-
-    const x = 58;
-    const y = 3.5;
-
-    const screenX = x - cameraX;
-    const screenY = y;
-
+    const goal = stageData[5].goal;
+    const x = goal.x - cameraX;
+    const y = goal.y;
     ctx.save();
-
-    ctx.fillStyle = "gold";
-
-    ctx.fillRect(
-        screenX - 15,
-        screenY - 30,
-        30,
-        60
-    );
-
-    ctx.fillStyle = "#fff7a0";
-
-    ctx.fillRect(
-        screenX - 8,
-        screenY - 23,
-        16,
-        46
-    );
-
+    ctx.shadowColor = "#ffe66d";
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = "#ffe66d";
+    ctx.fillRect(x - 22, y, 44, 90);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#fff8c7";
+    ctx.fillRect(x - 11, y + 10, 22, 70);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("GOAL", x, y - 12);
     ctx.restore();
 }
-
-    ctx.save();
-
-    ctx.fillStyle = "gold";
-
-    ctx.fillRect(
-        screen.x - 15,
-        screen.y - 30,
-        30,
-        60
-    );
-
-    ctx.fillStyle = "#fff7a0";
-
-    ctx.fillRect(
-        screen.x - 8,
-        screen.y - 23,
-        16,
-        46
-    );
-
-    ctx.restore();
-}
-
-// ============================================================
-// Darkness
-// ============================================================
-
-function drawDarkness() {
-
-    let darkness = 0;
-
-    switch (stage) {
-
-        case 1:
-            darkness = 0;
-            break;
-
-        case 2:
-            darkness = 0.2;
-            break;
-
-        case 3:
-            darkness = 0.5;
-            break;
-
-        case 4:
-            darkness = 0.7;
-            break;
-
-        case 5:
-            darkness =
-                0.85 +
-                clearBrightness;
-
-            if (darkness > 1) {
-                darkness = 1;
-            }
-
-            break;
-    }
-
-    if (darkness <= 0) {
-        return;
-    }
-
-    ctx.save();
-
-    ctx.fillStyle = `rgba(0,0,0,${darkness})`;
-    
-    ctx.fillRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    ctx.restore();
-}
-
-// ============================================================
-// HUD
-// ============================================================
 
 function drawHUD() {
-
-    ctx.save();
-
-    ctx.fillStyle =
-        "rgba(0,0,0,0.5)";
-
-    ctx.fillRect(
-        10,
-        10,
-        160,
-        40
-    );
-
-    ctx.fillStyle = "white";
-
-    ctx.font =
-        "bold 20px sans-serif";
-
+    ctx.fillStyle = "rgba(0,0,0,0.48)";
+    ctx.fillRect(14, 14, 155, 42);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 20px sans-serif";
     ctx.textAlign = "left";
+    ctx.fillText(`STAGE ${stage} / 5`, 27, 42);
 
-    ctx.fillText(
-    `STAGE ${stage}`,
-    25,
-    37
-);
-
-    ctx.restore();
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.textAlign = "right";
+    ctx.fillText("A/D:移動  SPACE:ジャンプ  Q:スイッチ  E:ドア  R:リトライ", SCREEN_WIDTH - 18, 28);
 }
 
-// ============================================================
-// Game Clear
-// ============================================================
+function drawDarkness() {
+    const darkness = [0, 0.08, 0.16, 0.25, 0.32, 0.38][stage];
+    if (darkness <= 0) return;
+    ctx.fillStyle = `rgba(0,0,0,${darkness})`;
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+}
+
+function drawGame() {
+    drawBackground();
+    drawPlatforms();
+    drawWall();
+    drawHazards();
+    drawSwitches();
+    if (stage !== 5) door.draw();
+    if (stage === 5) drawGoal();
+    player.draw();
+    drawDarkness();
+    if (clearEffect) {
+        ctx.fillStyle = `rgba(255,255,255,${clearBrightness})`;
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    drawHUD();
+}
+
+function drawSparkles() {
+    sparkleTime += 0.016;
+    const positions = [[130, 100], [300, 260], [520, 120], [740, 300], [850, 160]];
+    positions.forEach((p, i) => {
+        const alpha = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(sparkleTime * 2 + i));
+        ctx.globalAlpha = alpha;
+        if (images.sparkle && images.sparkle.complete && images.sparkle.naturalWidth > 0) {
+            ctx.drawImage(images.sparkle, p[0] - 15, p[1] - 15, 30, 30);
+        } else {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(p[0] - 2, p[1] - 10, 4, 20);
+            ctx.fillRect(p[0] - 10, p[1] - 2, 20, 4);
+        }
+    });
+    ctx.globalAlpha = 1;
+}
+
+function drawTitle() {
+    ctx.fillStyle = "#10182f";
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    if (images.title && images.title.complete && images.title.naturalWidth > 0) {
+        ctx.drawImage(images.title, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.font = "bold 48px sans-serif";
+        ctx.fillText("ゴールのその先へ", SCREEN_WIDTH / 2, 190);
+        ctx.font = "22px sans-serif";
+        ctx.fillText("Beyond the goal", SCREEN_WIDTH / 2, 235);
+    }
+    drawSparkles();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 25px sans-serif";
+    ctx.fillText("Fキーでスタート", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 75);
+}
 
 function drawClear() {
-
-    ctx.clearRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    if (
-        images.clear.complete &&
-        images.clear.naturalWidth > 0
-    ) {
-
-        ctx.drawImage(
-            images.clear,
-            0,
-            0,
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT
-        );
-
-        return;
+    if (images.clear && images.clear.complete && images.clear.naturalWidth > 0) {
+        ctx.drawImage(images.clear, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    } else {
+        ctx.fillStyle = "#101827";
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 52px sans-serif";
+        ctx.fillText("ゲームクリア！", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 25);
+        ctx.font = "24px sans-serif";
+        ctx.fillText("Rキーで最初からプレイ", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 35);
+        ctx.fillText("Escキーでタイトルへ", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 78);
     }
-
-    // Clear.pngがない場合
-    ctx.fillStyle = "#101827";
-
-    ctx.fillRect(
-        0,
-        0,
-        SCREEN_WIDTH,
-        SCREEN_HEIGHT
-    );
-
-    ctx.textAlign = "center";
-
-    ctx.fillStyle = "white";
-
-    ctx.font =
-        "bold 50px sans-serif";
-
-    ctx.fillText(
-        "ゲームクリア！",
-        SCREEN_WIDTH / 2,
-        SCREEN_HEIGHT / 2 - 20
-    );
-
-    ctx.font =
-        "bold 24px sans-serif";
-
-    ctx.fillText(
-        "Rキーでリトライ",
-        SCREEN_WIDTH / 2,
-        SCREEN_HEIGHT / 2 + 40
-    );
-
-    ctx.fillText(
-        "Escキーでタイトルへ",
-        SCREEN_WIDTH / 2,
-        SCREEN_HEIGHT / 2 + 80
-    );
 }
 
-// ============================================================
-// Main Update
-// ============================================================
-
+// ------------------------------
+// メインループ
+// ------------------------------
 function update(dt) {
-
-    if (currentScene === SCENE_GAME) {
-
-        updateGame(dt);
-    }
-
-    // previousKeys更新
-    for (const code in keys) {
-
-        previousKeys[code] =
-            keys[code];
-    }
+    if (currentScene === SCENE_GAME) updateGame(dt);
+    for (const code in keys) previousKeys[code] = keys[code];
 }
-
-// ============================================================
-// Main Draw
-// ============================================================
 
 function draw() {
-
-    if (currentScene === SCENE_TITLE) {
-
-        drawTitle();
-    }
-
-    else if (currentScene === SCENE_GAME) {
-
-        drawGame();
-    }
-
-    else if (currentScene === SCENE_CLEAR) {
-
-        drawClear();
-    }
+    if (currentScene === SCENE_TITLE) drawTitle();
+    else if (currentScene === SCENE_GAME) drawGame();
+    else if (currentScene === SCENE_CLEAR) drawClear();
 }
 
-// ============================================================
-// Main Loop
-// ============================================================
-
 function gameLoop(timestamp) {
-
-    if (!lastTime) {
-        lastTime = timestamp;
-    }
-
-    let dt =
-        (timestamp - lastTime) / 1000;
-
+    if (!lastTime) lastTime = timestamp;
+    let dt = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
-
-    // 異常に大きいdtを防ぐ
-    if (dt > 0.05) {
-        dt = 0.05;
-    }
-
+    dt = Math.min(dt, 0.05);
     update(dt);
-
     draw();
-
     requestAnimationFrame(gameLoop);
 }
 
-// ============================================================
-// 初期状態
-// ============================================================
-
+// 初期画面
 currentScene = SCENE_TITLE;
-
+playSound(audio.titleBGM);
 requestAnimationFrame(gameLoop);
