@@ -60,6 +60,81 @@ window.addEventListener("keyup", (event) => {
     keys[event.code] = false;
 });
 
+/* ------------------------------
+   スマートフォン用タッチ操作
+   ------------------------------ */
+function setupTouchControls() {
+    // 左右移動は押している間だけ入力する
+    [["touchLeft", "KeyA"], ["touchRight", "KeyD"]].forEach(([id, code]) => {
+        const button = document.getElementById(id);
+        if (!button) return;
+
+        const release = () => {
+            keys[code] = false;
+            button.classList.remove("is-pressed");
+        };
+
+        button.addEventListener("pointerdown", event => {
+            event.preventDefault();
+            keys[code] = true;
+            button.classList.add("is-pressed");
+            try { button.setPointerCapture(event.pointerId); } catch (_) {}
+        });
+        button.addEventListener("pointerup", release);
+        button.addEventListener("pointercancel", release);
+        button.addEventListener("lostpointercapture", release);
+        button.addEventListener("contextmenu", event => event.preventDefault());
+    });
+
+    // ジャンプ・スイッチ・ドアはキー入力を短く送る
+    function tapKey(code) {
+        keys[code] = true;
+        window.setTimeout(() => { keys[code] = false; }, 120);
+    }
+
+    [["touchJump", "Space"], ["touchSwitch", "KeyQ"], ["touchDoor", "KeyE"]]
+        .forEach(([id, code]) => {
+            const button = document.getElementById(id);
+            if (!button) return;
+            button.addEventListener("pointerdown", event => {
+                event.preventDefault();
+                tapKey(code);
+                button.classList.add("is-pressed");
+            });
+            const release = () => button.classList.remove("is-pressed");
+            button.addEventListener("pointerup", release);
+            button.addEventListener("pointercancel", release);
+            button.addEventListener("contextmenu", event => event.preventDefault());
+        });
+
+    const startButton = document.getElementById("touchStart");
+    if (startButton) startButton.addEventListener("click", () => {
+        if (currentScene === SCENE_TITLE) startGame();
+    });
+
+    const retryButton = document.getElementById("touchRetry");
+    if (retryButton) retryButton.addEventListener("click", () => {
+        if (currentScene === SCENE_CLEAR) startGame();
+        else if (currentScene === SCENE_GAME) restartStage();
+    });
+
+    const titleButton = document.getElementById("touchTitle");
+    if (titleButton) titleButton.addEventListener("click", () => {
+        if (currentScene !== SCENE_TITLE) returnToTitle();
+    });
+}
+
+function updateTouchSceneButtons() {
+    const startButton = document.getElementById("touchStart");
+    const retryButton = document.getElementById("touchRetry");
+    const titleButton = document.getElementById("touchTitle");
+    if (startButton) startButton.hidden = currentScene !== SCENE_TITLE;
+    if (retryButton) retryButton.hidden = currentScene === SCENE_TITLE;
+    if (titleButton) titleButton.hidden = currentScene === SCENE_TITLE;
+}
+
+setupTouchControls();
+
 // ------------------------------
 // 画像・音声
 // ------------------------------
@@ -235,7 +310,8 @@ class Player {
         this.y = position.y;
         this.vx = 0;
         this.vy = 0;
-        this.grounded = false;
+
+    this.grounded = false;
         this.previousY = this.y;
         this.facing = 1;
     }
@@ -284,8 +360,7 @@ class Player {
         ctx.fillRect(sx + 2, sy + 18, this.width - 4, 12);
         ctx.fillStyle = "#142b3b";
         const eyeX = this.facing > 0 ? sx + 19 : sx + 7;
-
-          ctx.fillRect(eyeX, sy + 13, 4, 4);
+        ctx.fillRect(eyeX, sy + 13, 4, 4);
         ctx.restore();
     }
 }
@@ -548,7 +623,10 @@ function updateStageMechanics(dt) {
     if (stage === 3) {
         platformTimer += dt;
         if (platformTimer > 2.5) {
-            platformTimer = 0;
+
+
+
+          platformTimer = 0;
             const candidates = stageData[3].disappearing;
             const index = candidates[Math.floor(Math.random() * candidates.length)];
             removedPlatforms.add(index);
@@ -572,11 +650,6 @@ function updateStageMechanics(dt) {
 
 function updateGoal() {
     if (stage !== 5) return;
-
-
-
-
-
     const goal = stageData[5].goal;
     if (distanceToObject(goal.x, goal.y + 35) < 55) {
         clearEffect = true;
@@ -841,6 +914,7 @@ function drawClear() {
 // ------------------------------
 function update(dt) {
     if (currentScene === SCENE_GAME) updateGame(dt);
+    updateTouchSceneButtons();
     for (const code in keys) previousKeys[code] = keys[code];
 }
 
