@@ -1,23 +1,143 @@
-Beyond the goal
-ゴールのその先へ
 
-◀ ▶
-SWITCH DOOR JUMP
-左右：押している間移動 ／ JUMP：ジャンプ ／ SWITCH・DOOR：近づいてタップ
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050711">
 
-操作方法
-F：ゲームスタート
+    <title>Beyond the goal</title>
 
-A / D：左右移動
+    <link rel="stylesheet" href="beyond-the-goal.css">
+</head>
 
-SPACE：ジャンプ
+<body>
 
-Q：スイッチを押す
+    <main class="game-container">
 
-E：ドアを開ける
+        <h1>Beyond the goal</h1>
+        <p class="subtitle">ゴールのその先へ</p>
 
-R：リトライ
+        <!-- ゲーム画面 -->
+        <div class="canvas-wrap">
+            <canvas
+                id="gameCanvas"
+                width="960"
+                height="500">
+            </canvas>
+        </div>
 
-ESC：タイトルへ戻る
+        <!-- スマートフォン用操作ボタン -->
+        <div class="touch-controls">
 
-PORTFOLIOへ戻る
+            <!-- スタート・リトライ・タイトル -->
+            <div class="touch-system-buttons">
+
+                <button
+                    id="touchStart"
+                    class="touch-button scene-button"
+                    type="button">
+                    START
+                </button>
+
+                <button
+                    id="touchRetry"
+                    class="touch-button scene-button"
+                    type="button"
+                    hidden>
+                    RETRY
+                </button>
+
+                <button
+                    id="touchTitle"
+                    class="touch-button scene-button"
+                    type="button"
+                    hidden>
+                    TITLE
+                </button>
+
+            </div>
+
+            <!-- 左右移動・アクション -->
+            <div class="touch-game-buttons">
+
+                <div class="move-buttons">
+
+                    <button
+                        id="touchLeft"
+                        class="touch-button direction-button"
+                        type="button">
+                        ◀
+                    </button>
+
+                    <button
+                        id="touchRight"
+                        class="touch-button direction-button"
+                        type="button">
+                        ▶
+                    </button>
+
+                </div>
+
+                <div class="action-buttons">
+
+                    <button
+                        id="touchSwitch"
+                        class="touch-button action-button"
+                        type="button">
+                        SWITCH
+                    </button>
+
+                    <button
+                        id="touchDoor"
+                        class="touch-button action-button"
+                        type="button">
+                        DOOR
+                    </button>
+
+                    <button
+                        id="touchJump"
+                        class="touch-button jump-button"
+                        type="button">
+                        JUMP
+                    </button>
+
+                </div>
+
+            </div>
+
+            <p class="touch-hint">
+                左右：押している間移動 ／ JUMP：ジャンプ ／
+                SWITCH・DOOR：近づいてタップ
+            </p>
+
+        </div>
+
+        <!-- PC・スマートフォン共通の操作説明 -->
+        <section class="game-info">
+
+            <h2>操作方法</h2>
+
+            <p><span>F</span>：ゲームスタート</p>
+            <p><span>A</span> / <span>D</span>：左右移動</p>
+            <p><span>SPACE</span>：ジャンプ</p>
+            <p><span>Q</span>：スイッチを押す</p>
+            <p><span>E</span>：ドアを開ける</p>
+            <p><span>R</span>：リトライ</p>
+            <p><span>ESC</span>：タイトルへ戻る</p>
+
+            <hr>
+
+            <a href="index.html" class="back-button">
+                PORTFOLIOへ戻る
+            </a>
+
+        </section>
+
+    </main>
+
+    <!-- JavaScript -->
+    <script src="beyond-the-goal.js" defer></script>
+
+</body>
+</html>
