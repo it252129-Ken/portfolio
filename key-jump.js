@@ -126,6 +126,52 @@ document.addEventListener("keyup", (event) => {
 });
 
 
+
+// =========================
+// スマホのタッチ操作
+// =========================
+
+const mobileButtons =
+    document.querySelectorAll(".mobile-controls button");
+
+mobileButtons.forEach(button => {
+
+    const key = button.dataset.key;
+
+    // タッチ開始
+    button.addEventListener("pointerdown", (event) => {
+
+        event.preventDefault();
+
+        button.setPointerCapture(event.pointerId);
+
+        keys[key] = true;
+
+    });
+
+    // タッチ終了
+    function releaseKey(event) {
+
+        event.preventDefault();
+
+        keys[key] = false;
+
+    }
+
+    button.addEventListener("pointerup", releaseKey);
+
+    button.addEventListener("pointercancel", releaseKey);
+
+    button.addEventListener("lostpointercapture", () => {
+
+        keys[key] = false;
+
+    });
+
+});
+
+
+
 // =========================
 // マップ初期化
 // =========================
