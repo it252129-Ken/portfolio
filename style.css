@@ -14,7 +14,7 @@ html {
 
 body {
     font-family: Arial, "Noto Sans JP", sans-serif;
-    background: #07191c;
+    background: #123b40;
     color: white;
     line-height: 1.8;
 }
@@ -92,12 +92,12 @@ main {
 
     padding: 100px 20px;
 
-    background:
+   background:
     radial-gradient(
         circle at center,
-        #17666a 0%,
-        #07191c 55%,
-        #040d0f 100%
+        #35a6a5 0%,
+        #176b70 55%,
+        #0b3038 100%
     );
 
     scroll-margin-top: 80px;
@@ -170,14 +170,12 @@ main {
 }
 
 .works {
-    background: #091f22;
-
+    background: #17494e;
     scroll-margin-top: 80px;
 }
 
 .profile {
-    background: #07191c;
-
+    background: #17494e;
     scroll-margin-top: 80px;
 }
 
@@ -214,14 +212,10 @@ section h2 {
 ========================= */
 
 .work-detail {
-    background: #0d292d;
-
-    border: 1px solid #1e666b;
-
+    background: #226068;
+    border: 1px solid #48a6a6;
     padding: 30px;
-
     transition: 0.3s;
-
     overflow: hidden;
 }
 
@@ -294,9 +288,7 @@ section h2 {
 
 .work-detail-section {
     padding: 120px 10%;
-
-    background: #07191c;
-
+    background: #123b40;
     scroll-margin-top: 80px;
 }
 
@@ -356,14 +348,10 @@ section h2 {
 
 .profile-content {
     max-width: 800px;
-
     margin-top: 40px;
-
     padding: 40px;
-
     border-left: 3px solid #39d6c8;
-
-    background: #0d292d;
+    background: #226068;
 }
 
 .profile-content h3 {
