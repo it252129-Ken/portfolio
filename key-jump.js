@@ -65,7 +65,7 @@ const enemies = [
         speed: 160,
         direction: -1,
         velocityY: 0,
-   　　　isGround: false
+        isGround: true
     },
 
     {
@@ -75,7 +75,7 @@ const enemies = [
         speed: 180,
         direction: -1,
         velocityY: 0,
-   　　 isGround: false
+        isGround: true
     },
 
     {
@@ -85,7 +85,7 @@ const enemies = [
         speed: 140,
         direction: 1,
         velocityY: 0,
-        isGround: false
+        isGround: true
     },
 
     {
@@ -95,8 +95,10 @@ const enemies = [
         speed: 140,
         direction: -1,
         velocityY: 0,
-        isGround: false
+        isGround: true
     }
+
+];
 
 ];
 
