@@ -36,7 +36,7 @@ header {
 
     padding: 20px 60px;
 
-    background: rgba(7, 25, 28, 0.9);
+    background: rgba(18, 59, 64, 0.95);
     border-bottom: 1px solid #1e666b;
 
     z-index: 1000;
@@ -293,8 +293,14 @@ section h2 {
 }
 
 .detail-item {
+    max-width: 900px;
+    margin-top: 40px;
+    padding: 35px;
+
     background: #226068;
     border: 1px solid #48a6a6;
+
+    transition: 0.3s;
 }
 
 .detail-item:hover {
