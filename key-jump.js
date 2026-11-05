@@ -539,51 +539,50 @@ function updateEnemies(deltaTime) {
 
         const enemy = enemies[i];
 
-        const oldX = enemy.position.x;
-
-
-        // 敵を横に移動
-
-        enemy.position.x +=
+        // 次の移動位置
+        const nextX =
+            enemy.position.x +
             enemy.speed *
             enemy.direction *
             deltaTime;
 
+        // 進行方向側のX座標
+        let checkX;
 
-        // 敵自身の4隅をチェック
+        if (enemy.direction > 0) {
+            // 右方向
+            checkX = nextX + enemy.width - 1;
+        }
+        else {
+            // 左方向
+            checkX = nextX;
+        }
 
-        if (
+        // 敵の上下2か所だけ壁判定
+        const hitWall =
+            isWall(checkX, enemy.position.y + 1) ||
             isWall(
-                enemy.position.x,
-                enemy.position.y
-            ) ||
-            isWall(
-                enemy.position.x + enemy.width,
-                enemy.position.y
-            ) ||
-            isWall(
-                enemy.position.x,
-                enemy.position.y + enemy.height
-            ) ||
-            isWall(
-                enemy.position.x + enemy.width,
-                enemy.position.y + enemy.height
-            )
-        ) {
+                checkX,
+                enemy.position.y + enemy.height - 1
+            );
 
-            // 元の位置へ戻す
+        if (hitWall) {
 
-            enemy.position.x = oldX;
-
-            // 方向反転
-
+            // 壁に当たったら反転
             enemy.direction *= -1;
+
+        }
+        else {
+
+            // 壁がなければ移動
+            enemy.position.x = nextX;
 
         }
 
     }
 
 }
+
 
 
 // =========================
