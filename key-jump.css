@@ -1,0 +1,127 @@
+
+/* =========================
+   基本設定
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    background: #101827;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.game-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    background: black;
+    touch-action: none;
+}
+
+/* =========================
+   ゲーム情報
+========================= */
+
+.game-info {
+    margin-top: 15px;
+}
+
+/* =========================
+   スマホ操作
+========================= */
+
+.mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 15px 5px;
+    max-width: 600px;
+    margin: 0 auto;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.mobile-controls button,
+.mobile-scene-controls button {
+    min-width: 65px;
+    height: 60px;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 15px;
+    background: #244d75;
+    color: white;
+    touch-action: none;
+}
+
+.mobile-controls button:active,
+.mobile-scene-controls button:active {
+    background: #428bd0;
+    transform: scale(0.95);
+}
+
+.move-buttons,
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* =========================
+   スマホ用シーン操作
+========================= */
+
+.mobile-scene-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* =========================
+   PCでは操作ボタンを非表示
+========================= */
+
+@media (min-width: 768px) {
+    .mobile-controls,
+    .mobile-scene-controls {
+        display: none;
+    }
+}
+
+/* =========================
+   スマホ画面
+========================= */
+
+@media (max-width: 767px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+    .game-info p {
+        font-size: 12px;
+    }
+
+    .mobile-controls {
+        padding: 15px 0;
+    }
+
+}
