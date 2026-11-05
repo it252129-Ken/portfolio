@@ -63,7 +63,9 @@ const enemies = [
         width: 30,
         height: 30,
         speed: 160,
-        direction: -1
+        direction: -1,
+        velocityY: 0,
+   　　　isGround: false
     },
 
     {
@@ -71,7 +73,9 @@ const enemies = [
         width: 30,
         height: 30,
         speed: 180,
-        direction: -1
+        direction: -1,
+        velocityY: 0,
+   　　 isGround: false
     },
 
     {
@@ -79,7 +83,9 @@ const enemies = [
         width: 30,
         height: 30,
         speed: 140,
-        direction: 1
+        direction: 1,
+        velocityY: 0,
+        isGround: false
     },
 
     {
@@ -87,7 +93,9 @@ const enemies = [
         width: 30,
         height: 30,
         speed: 140,
-        direction: -1
+        direction: -1,
+        velocityY: 0,
+        isGround: false
     }
 
 ];
@@ -533,32 +541,34 @@ function updatePlayer(deltaTime) {
 // 敵の更新
 // =========================
 
+
 function updateEnemies(deltaTime) {
+
+    const gravity = 900;
 
     for (let i = 0; i < ENEMY_COUNT; i++) {
 
         const enemy = enemies[i];
 
-        // 次の移動位置
+        // =========================
+        // 横移動
+        // =========================
+
         const nextX =
             enemy.position.x +
             enemy.speed *
             enemy.direction *
             deltaTime;
 
-        // 進行方向側のX座標
         let checkX;
 
         if (enemy.direction > 0) {
-            // 右方向
-            checkX = nextX + enemy.width - 1;
+            checkX = nextX + enemy.width;
         }
         else {
-            // 左方向
             checkX = nextX;
         }
 
-        // 敵の上下2か所だけ壁判定
         const hitWall =
             isWall(checkX, enemy.position.y + 1) ||
             isWall(
@@ -568,14 +578,91 @@ function updateEnemies(deltaTime) {
 
         if (hitWall) {
 
-            // 壁に当たったら反転
             enemy.direction *= -1;
 
         }
         else {
 
-            // 壁がなければ移動
             enemy.position.x = nextX;
+
+        }
+
+        // =========================
+        // 重力
+        // =========================
+
+        enemy.velocityY += gravity * deltaTime;
+
+        const oldY = enemy.position.y;
+
+        enemy.position.y +=
+            enemy.velocityY * deltaTime;
+
+        // =========================
+        // 着地判定
+        // =========================
+
+        if (enemy.velocityY >= 0) {
+
+            const bottom =
+                enemy.position.y + enemy.height;
+
+            const tileY =
+                Math.floor(bottom / TILE_SIZE);
+
+            const leftTile =
+                Math.floor(enemy.position.x / TILE_SIZE);
+
+            const rightTile =
+                Math.floor(
+                    (enemy.position.x + enemy.width - 1)
+                    / TILE_SIZE
+                );
+
+            let landed = false;
+
+            for (
+                let x = leftTile;
+                x <= rightTile;
+                x++
+            ) {
+
+                if (
+                    tileY >= 0 &&
+                    tileY < MAP_HEIGHT &&
+                    x >= 0 &&
+                    x < MAP_WIDTH &&
+                    mapData[tileY][x] === 1
+                ) {
+
+                    const groundY =
+                        tileY * TILE_SIZE;
+
+                    if (
+                        oldY + enemy.height <= groundY + 2
+                    ) {
+
+                        enemy.position.y =
+                            groundY - enemy.height;
+
+                        enemy.velocityY = 0;
+                        enemy.isGround = true;
+
+                        landed = true;
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+            if (!landed) {
+
+                enemy.isGround = false;
+
+            }
 
         }
 
