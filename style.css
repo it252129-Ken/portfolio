@@ -293,17 +293,8 @@ section h2 {
 }
 
 .detail-item {
-    max-width: 900px;
-
-    margin-top: 40px;
-
-    padding: 35px;
-
-    background: #0d292d;
-
-    border: 1px solid #1e666b;
-
-    transition: 0.3s;
+    background: #226068;
+    border: 1px solid #48a6a6;
 }
 
 .detail-item:hover {
