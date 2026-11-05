@@ -93,12 +93,12 @@ main {
     padding: 100px 20px;
 
     background:
-        radial-gradient(
-            circle at center,
-            #12464a 0%,
-            #07191c 55%,
-            #040d0f 100%
-        );
+    radial-gradient(
+        circle at center,
+        #17666a 0%,
+        #07191c 55%,
+        #040d0f 100%
+    );
 
     scroll-margin-top: 80px;
 }
