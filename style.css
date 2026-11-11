@@ -443,3 +443,461 @@ footer {
         padding: 25px;
     }
 }
+
+
+/* =========================
+   ナビ：チャットアシスタント
+========================= */
+
+#assistant-container {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 2000;
+}
+
+/* チャット画面 */
+
+#assistant-window {
+    display: none;
+
+    width: 360px;
+    height: 480px;
+
+    margin-bottom: 15px;
+
+    background: #17494e;
+    border: 1px solid #39d6c8;
+
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+    overflow: hidden;
+
+    flex-direction: column;
+}
+
+/* チャット表示中 */
+
+#assistant-window.active {
+    display: flex;
+}
+
+/* ヘッダー */
+
+.assistant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px 20px;
+
+    background: #226068;
+    border-bottom: 1px solid #39d6c8;
+}
+
+.assistant-header h3 {
+    color: #39d6c8;
+    font-size: 20px;
+}
+
+.assistant-header p {
+    color: #b8d5d5;
+    font-size: 11px;
+}
+
+#assistant-close {
+    background: none;
+    border: none;
+
+    color: white;
+    font-size: 28px;
+
+    cursor: pointer;
+}
+
+/* メッセージ欄 */
+
+#assistant-messages {
+    flex: 1;
+
+    padding: 15px;
+
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* メッセージ共通 */
+
+.message {
+    max-width: 85%;
+
+    padding: 10px 14px;
+
+    border-radius: 12px;
+
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ナビのメッセージ */
+
+.assistant-message {
+    align-self: flex-start;
+
+    background: #226068;
+    color: white;
+}
+
+/* ユーザーのメッセージ */
+
+.user-message {
+    align-self: flex-end;
+
+    background: #39d6c8;
+    color: #123b40;
+}
+
+/* 入力欄 */
+
+.assistant-input-area {
+    display: flex;
+
+    padding: 12px;
+
+    background: #123b40;
+
+    border-top: 1px solid #1e666b;
+
+    gap: 8px;
+}
+
+#assistant-input {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 10px;
+
+    background: #226068;
+
+    border: 1px solid #48a6a6;
+
+    color: white;
+
+    outline: none;
+}
+
+#assistant-input:focus {
+    border-color: #39d6c8;
+}
+
+#assistant-input::placeholder {
+    color: #9bb8b8;
+}
+
+#assistant-send {
+    padding: 10px 15px;
+
+    background: #39d6c8;
+
+    border: none;
+
+    color: #123b40;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+}
+
+#assistant-send:hover {
+    background: white;
+}
+
+/* チャットを開くボタン */
+
+#assistant-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-left: auto;
+
+    padding: 15px 22px;
+
+    background: #39d6c8;
+
+    border: none;
+    border-radius: 30px;
+
+    color: #123b40;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+
+    transition: 0.3s;
+}
+
+#assistant-toggle:hover {
+    transform: translateY(-4px);
+
+    box-shadow: 0 8px 25px rgba(57, 214, 200, 0.4);
+}
+
+/* スマホ対応 */
+
+@media (max-width: 500px) {
+
+    #assistant-container {
+        right: 15px;
+        bottom: 15px;
+    }
+
+    #assistant-window {
+        width: calc(100vw - 30px);
+        height: 65vh;
+        max-height: 480px;
+    }
+
+    #assistant-toggle {
+        padding: 13px 18px;
+    }
+
+}
+
+/* =========================
+   ナビ：チャットアシスタント
+========================= */
+
+#assistant-container {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 2000;
+}
+
+/* チャット画面 */
+
+#assistant-window {
+    display: none;
+
+    width: 360px;
+    height: 480px;
+
+    margin-bottom: 15px;
+
+    background: #17494e;
+    border: 1px solid #39d6c8;
+
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+    overflow: hidden;
+
+    flex-direction: column;
+}
+
+/* チャット表示中 */
+
+#assistant-window.active {
+    display: flex;
+}
+
+/* ヘッダー */
+
+.assistant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px 20px;
+
+    background: #226068;
+    border-bottom: 1px solid #39d6c8;
+}
+
+.assistant-header h3 {
+    color: #39d6c8;
+    font-size: 20px;
+}
+
+.assistant-header p {
+    color: #b8d5d5;
+    font-size: 11px;
+}
+
+#assistant-close {
+    background: none;
+    border: none;
+
+    color: white;
+    font-size: 28px;
+
+    cursor: pointer;
+}
+
+/* メッセージ欄 */
+
+#assistant-messages {
+    flex: 1;
+
+    padding: 15px;
+
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* メッセージ共通 */
+
+.message {
+    max-width: 85%;
+
+    padding: 10px 14px;
+
+    border-radius: 12px;
+
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* ナビのメッセージ */
+
+.assistant-message {
+    align-self: flex-start;
+
+    background: #226068;
+    color: white;
+}
+
+/* ユーザーのメッセージ */
+
+.user-message {
+    align-self: flex-end;
+
+    background: #39d6c8;
+    color: #123b40;
+}
+
+/* 入力欄 */
+
+.assistant-input-area {
+    display: flex;
+
+    padding: 12px;
+
+    background: #123b40;
+
+    border-top: 1px solid #1e666b;
+
+    gap: 8px;
+}
+
+#assistant-input {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 10px;
+
+    background: #226068;
+
+    border: 1px solid #48a6a6;
+
+    color: white;
+
+    outline: none;
+}
+
+#assistant-input:focus {
+    border-color: #39d6c8;
+}
+
+#assistant-input::placeholder {
+    color: #9bb8b8;
+}
+
+#assistant-send {
+    padding: 10px 15px;
+
+    background: #39d6c8;
+
+    border: none;
+
+    color: #123b40;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+}
+
+#assistant-send:hover {
+    background: white;
+}
+
+/* チャットを開くボタン */
+
+#assistant-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-left: auto;
+
+    padding: 15px 22px;
+
+    background: #39d6c8;
+
+    border: none;
+    border-radius: 30px;
+
+    color: #123b40;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+
+    transition: 0.3s;
+}
+
+#assistant-toggle:hover {
+    transform: translateY(-4px);
+
+    box-shadow: 0 8px 25px rgba(57, 214, 200, 0.4);
+}
+
+/* スマホ対応 */
+
+@media (max-width: 500px) {
+
+    #assistant-container {
+        right: 15px;
+        bottom: 15px;
+    }
+
+    #assistant-window {
+        width: calc(100vw - 30px);
+        height: 65vh;
+        max-height: 480px;
+    }
+
+    #assistant-toggle {
+        padding: 13px 18px;
+    }
+
+}
+
