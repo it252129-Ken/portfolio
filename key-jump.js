@@ -462,6 +462,36 @@ function resetPlayer() {
 
 }
 
+// =========================
+// 敵を初期位置へ戻す
+// =========================
+
+function resetEnemies() {
+
+    const initialEnemies = [
+        { x: 400, y: 930, direction: -1 },
+        { x: 900, y: 930, direction: -1 },
+        { x: 1400, y: 570, direction: 1 },
+        { x: 1400, y: 210, direction: -1 }
+    ];
+
+    for (let i = 0; i < ENEMY_COUNT; i++) {
+
+        const enemy = enemies[i];
+        const initial = initialEnemies[i];
+
+        enemy.position.x = initial.x;
+        enemy.position.y = initial.y;
+
+        enemy.velocityY = 0;
+        enemy.isGround = true;
+
+        enemy.direction = initial.direction;
+
+    }
+
+}    
+
 
 // =========================
 // プレイヤー移動
@@ -525,36 +555,6 @@ function updatePlayer(deltaTime) {
         player.position.x = oldX;
 
     }
-
-// =========================
-// 敵を初期位置へ戻す
-// =========================
-
-function resetEnemies() {
-
-    const initialEnemies = [
-        { x: 400, y: 930, direction: -1 },
-        { x: 900, y: 930, direction: -1 },
-        { x: 1400, y: 570, direction: 1 },
-        { x: 1400, y: 210, direction: -1 }
-    ];
-
-    for (let i = 0; i < ENEMY_COUNT; i++) {
-
-        const enemy = enemies[i];
-        const initial = initialEnemies[i];
-
-        enemy.position.x = initial.x;
-        enemy.position.y = initial.y;
-
-        enemy.velocityY = 0;
-        enemy.isGround = true;
-
-        enemy.direction = initial.direction;
-
-    }
-
-}    
 
 
     // =========================
