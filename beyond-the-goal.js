@@ -17,7 +17,6 @@ const SCREEN_HEIGHT = canvas.height;
 const SCENE_TITLE = 0;
 const SCENE_GAME = 1;
 const SCENE_CLEAR = 2;
-const SCENE_HOW_TO_PLAY = 3;
 
 let currentScene = SCENE_TITLE;
 let stage = 1;
@@ -40,15 +39,11 @@ function isKeyPressed(code) {
 
 
 window.addEventListener("keydown", (event) => {
-
     keys[event.code] = true;
-
-    if ([
-        "Space", "ArrowUp", "ArrowDown",
-        "ArrowLeft", "ArrowRight"
-    ].includes(event.code)) {
+    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
         event.preventDefault();
     }
+
 
     if (event.repeat) return;
 
