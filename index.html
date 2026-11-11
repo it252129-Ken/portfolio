@@ -676,9 +676,53 @@
     </footer>
 
 
-</body>
-<script src="games-data.js"></script>
-<script src="assistant.js"></script>
-</body>
+    <!-- =========================
+         ナビ：チャットアシスタント
+    ========================= -->
 
+    <div id="assistant-container">
+
+        <div id="assistant-window">
+
+            <div class="assistant-header">
+                <div>
+                    <h3>ナビ</h3>
+                    <p>ポートフォリオ案内アシスタント</p>
+                </div>
+
+                <button id="assistant-close">×</button>
+            </div>
+
+            <div id="assistant-messages"></div>
+
+            <div class="assistant-input-area">
+
+                <input
+                    type="text"
+                    id="assistant-input"
+                    placeholder="質問を入力してください..."
+                >
+
+                <button id="assistant-send">
+                    送信
+                </button>
+
+            </div>
+
+        </div>
+
+        <button id="assistant-toggle">
+            <span>✉</span>
+            <span>ナビに質問</span>
+        </button>
+
+    </div>
+
+    <!-- JavaScript読み込み -->
+
+    <script src="games-data.js"></script>
+    <script src="assistant.js"></script>
+
+</body>
 </html>
+
