@@ -111,18 +111,47 @@ const keys = {};
 let spacePressedLastFrame = false;
 
 
+
+// =========================
+// キー入力（スマホ・PC対応）
+// =========================
+
 document.addEventListener("keydown", (event) => {
+
+    // ブラウザのスクロール防止
+    if (
+        event.code === "Space" ||
+        event.code === "ArrowLeft" ||
+        event.code === "ArrowRight"
+    ) {
+        event.preventDefault();
+    }
 
     keys[event.code] = true;
 
 });
-
 
 document.addEventListener("keyup", (event) => {
 
     keys[event.code] = false;
 
 });
+
+// =========================
+// 別アプリへの切り替えなどで
+// 操作が押しっぱなしになるのを防ぐ
+// =========================
+
+window.addEventListener("blur", () => {
+
+    for (const key in keys) {
+
+        keys[key] = false;
+
+    }
+
+});
+
 
 
 
