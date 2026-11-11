@@ -17,6 +17,7 @@ const SCREEN_HEIGHT = canvas.height;
 const SCENE_TITLE = 0;
 const SCENE_GAME = 1;
 const SCENE_CLEAR = 2;
+const SCENE_HOW_TO_PLAY = 3;
 
 let currentScene = SCENE_TITLE;
 let stage = 1;
@@ -37,23 +38,68 @@ function isKeyPressed(code) {
     return !!keys[code] && !previousKeys[code];
 }
 
+
 window.addEventListener("keydown", (event) => {
+
     keys[event.code] = true;
-    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+
+    if ([
+        "Space", "ArrowUp", "ArrowDown",
+        "ArrowLeft", "ArrowRight"
+    ].includes(event.code)) {
         event.preventDefault();
     }
 
     if (event.repeat) return;
 
-    if (currentScene === SCENE_TITLE && event.code === "KeyF") {
-        startGame();
-    } else if (currentScene === SCENE_CLEAR) {
-        if (event.code === "KeyR") startGame();
-        if (event.code === "Escape") returnToTitle();
-    } else if (currentScene === SCENE_GAME) {
-        if (event.code === "Escape") returnToTitle();
-        if (event.code === "KeyR") restartStage();
+    // タイトル画面
+    if (currentScene === SCENE_TITLE) {
+
+        if (event.code === "KeyF") {
+            startGame();
+        }
+
+        if (event.code === "KeyH") {
+            currentScene = SCENE_HOW_TO_PLAY;
+        }
+
     }
+
+    // 説明書画面
+    else if (currentScene === SCENE_HOW_TO_PLAY) {
+
+        if (event.code === "Escape") {
+            returnToTitle();
+        }
+
+    }
+
+    // クリア画面
+    else if (currentScene === SCENE_CLEAR) {
+
+        if (event.code === "KeyR") {
+            startGame();
+        }
+
+        if (event.code === "Escape") {
+            returnToTitle();
+        }
+
+    }
+
+    // ゲーム中
+    else if (currentScene === SCENE_GAME) {
+
+        if (event.code === "Escape") {
+            returnToTitle();
+        }
+
+        if (event.code === "KeyR") {
+            restartStage();
+        }
+
+    }
+
 });
 
 window.addEventListener("keyup", (event) => {
