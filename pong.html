@@ -1,1 +1,44 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <link rel="stylesheet" href="pong.css">
+    <script src="pong.js" defer></script>
+</head>
+
+<body>
+
+    <main class="game-container">
+
+        <h1>PONG</h1>
+        <p class="subtitle">CPUと対戦するクラシックゲーム</p>
+
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+
+        <div class="system-buttons">
+            <button id="startButton">GAME START</button>
+            <button id="retryButton" hidden>RETRY</button>
+            <button id="titleButton" hidden>TITLE</button>
+        </div>
+
+        <div class="touch-controls">
+            <button id="upButton">▲</button>
+            <button id="downButton">▼</button>
+        </div>
+
+        <div class="game-info">
+            <p>操作方法：W / S または ↑ / ↓</p>
+            <p>先に5点獲得すると勝利です！</p>
+        </div>
+
+        <a href="index.html">ポートフォリオへ戻る</a>
+
+    </main>
+
+</body>
+</html>
+
