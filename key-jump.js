@@ -160,7 +160,9 @@ window.addEventListener("blur", () => {
 // =========================
 
 const mobileButtons =
-    document.querySelectorAll(".mobile-controls button");
+    document.querySelectorAll(
+        ".mobile-controls button, .mobile-scene-controls button"
+    );
 
 mobileButtons.forEach(button => {
 
