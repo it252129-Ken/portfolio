@@ -901,3 +901,25 @@ footer {
 
 }
 
+
+/* ポンゲームのリンク */
+
+.game-title-link {
+    color: #35d6d0;
+    text-decoration: none;
+    text-shadow:
+        0 0 5px #35d6d0,
+        0 0 10px #35d6d0,
+        0 0 20px #35a6a5;
+
+    transition: 0.3s;
+}
+
+.game-title-link:hover {
+    color: #ffffff;
+    text-shadow:
+        0 0 8px #35d6d0,
+        0 0 18px #35d6d0,
+        0 0 30px #35a6a5;
+}
+
