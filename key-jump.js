@@ -350,16 +350,47 @@ function updateTitle() {
 // ゲームクリア
 // =========================
 
+
 function updateGameClear() {
 
+    // Tキー：タイトルへ戻る
     if (keys["KeyT"]) {
 
         scene = Scene.Title;
 
-        player.position.x = 60;
-        player.position.y = 850;
+        resetPlayer();
 
-        player.velocityY = 0;
+        keys["KeyT"] = false;
+
+        return;
+
+    }
+
+    // Rキー：同じコースを再挑戦
+    if (keys["KeyR"]) {
+
+        // プレイヤーを初期位置へ
+        resetPlayer();
+
+        // 敵を初期位置へ
+        enemies[0].position = { x: 400, y: 930 };
+        enemies[1].position = { x: 900, y: 930 };
+        enemies[2].position = { x: 1400, y: 570 };
+        enemies[3].position = { x: 1400, y: 210 };
+
+        // 敵の状態を初期化
+        for (const enemy of enemies) {
+
+            enemy.velocityY = 0;
+            enemy.isGround = true;
+            enemy.direction = -1;
+
+        }
+
+        // ゲームプレイへ
+        scene = Scene.GamePlay;
+
+        keys["KeyR"] = false;
 
     }
 
@@ -1005,59 +1036,37 @@ function drawTitle() {
 // クリア画面
 // =========================
 
-function drawGameClear() {
 
-    ctx.fillStyle = "#000000";
+ctx.font = "bold 45px Arial";
 
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+ctx.fillText(
+    "RETRY",
+    canvas.width / 2,
+    310
+);
 
+ctx.font = "bold 35px Arial";
 
-    ctx.fillStyle = "#ffff00";
+ctx.fillText(
+    "R",
+    canvas.width / 2,
+    370
+);
 
-    ctx.textAlign = "center";
+ctx.font = "20px Arial";
 
+ctx.fillText(
+    "Rキーで再挑戦",
+    canvas.width / 2,
+    430
+);
 
-    ctx.font = "bold 80px Arial";
+ctx.fillText(
+    "Tキーでタイトルへ",
+    canvas.width / 2,
+    465
+);
 
-    ctx.fillText(
-        "CLEAR",
-        canvas.width / 2,
-        200
-    );
-
-
-    ctx.font = "bold 45px Arial";
-
-    ctx.fillText(
-        "TITLE",
-        canvas.width / 2,
-        310
-    );
-
-
-    ctx.font = "bold 35px Arial";
-
-    ctx.fillText(
-        "T",
-        canvas.width / 2,
-        370
-    );
-
-
-    ctx.font = "20px Arial";
-
-    ctx.fillText(
-        "Tキーでタイトルへ",
-        canvas.width / 2,
-        430
-    );
-
-}
 
 
 // =========================
