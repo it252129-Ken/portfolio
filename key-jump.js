@@ -350,15 +350,17 @@ function updateTitle() {
 // ゲームクリア
 // =========================
 
-
 function updateGameClear() {
 
     // Tキー：タイトルへ戻る
     if (keys["KeyT"]) {
 
-        scene = Scene.Title;
-
         resetPlayer();
+        resetEnemies();
+
+        spacePressedLastFrame = false;
+
+        scene = Scene.Title;
 
         keys["KeyT"] = false;
 
@@ -369,25 +371,11 @@ function updateGameClear() {
     // Rキー：同じコースを再挑戦
     if (keys["KeyR"]) {
 
-        // プレイヤーを初期位置へ
         resetPlayer();
+        resetEnemies();
 
-        // 敵を初期位置へ
-        enemies[0].position = { x: 400, y: 930 };
-        enemies[1].position = { x: 900, y: 930 };
-        enemies[2].position = { x: 1400, y: 570 };
-        enemies[3].position = { x: 1400, y: 210 };
+        spacePressedLastFrame = false;
 
-        // 敵の状態を初期化
-        for (const enemy of enemies) {
-
-            enemy.velocityY = 0;
-            enemy.isGround = true;
-            enemy.direction = -1;
-
-        }
-
-        // ゲームプレイへ
         scene = Scene.GamePlay;
 
         keys["KeyR"] = false;
@@ -535,6 +523,36 @@ function updatePlayer(deltaTime) {
         player.position.x = oldX;
 
     }
+
+// =========================
+// 敵を初期位置へ戻す
+// =========================
+
+function resetEnemies() {
+
+    const initialEnemies = [
+        { x: 400, y: 930, direction: -1 },
+        { x: 900, y: 930, direction: -1 },
+        { x: 1400, y: 570, direction: 1 },
+        { x: 1400, y: 210, direction: -1 }
+    ];
+
+    for (let i = 0; i < ENEMY_COUNT; i++) {
+
+        const enemy = enemies[i];
+        const initial = initialEnemies[i];
+
+        enemy.position.x = initial.x;
+        enemy.position.y = initial.y;
+
+        enemy.velocityY = 0;
+        enemy.isGround = true;
+
+        enemy.direction = initial.direction;
+
+    }
+
+}    
 
 
     // =========================
@@ -1036,36 +1054,63 @@ function drawTitle() {
 // クリア画面
 // =========================
 
+function drawGameClear() {
 
-ctx.font = "bold 45px Arial";
+    // 背景
+    ctx.fillStyle = "#000000";
 
-ctx.fillText(
-    "RETRY",
-    canvas.width / 2,
-    310
-);
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-ctx.font = "bold 35px Arial";
+    // CLEAR
+    ctx.fillStyle = "#ffff00";
 
-ctx.fillText(
-    "R",
-    canvas.width / 2,
-    370
-);
+    ctx.textAlign = "center";
 
-ctx.font = "20px Arial";
+    ctx.font = "bold 80px Arial";
 
-ctx.fillText(
-    "Rキーで再挑戦",
-    canvas.width / 2,
-    430
-);
+    ctx.fillText(
+        "CLEAR",
+        canvas.width / 2,
+        200
+    );
 
-ctx.fillText(
-    "Tキーでタイトルへ",
-    canvas.width / 2,
-    465
-);
+    // RETRY
+    ctx.font = "bold 45px Arial";
+
+    ctx.fillText(
+        "RETRY",
+        canvas.width / 2,
+        310
+    );
+
+    ctx.font = "bold 35px Arial";
+
+    ctx.fillText(
+        "R",
+        canvas.width / 2,
+        370
+    );
+
+    ctx.font = "20px Arial";
+
+    ctx.fillText(
+        "Rキーで再挑戦",
+        canvas.width / 2,
+        430
+    );
+
+    ctx.fillText(
+        "Tキーでタイトルへ",
+        canvas.width / 2,
+        465
+    );
+
+}
 
 
 
