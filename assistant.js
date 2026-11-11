@@ -156,3 +156,44 @@ if (assistantMessages && typeof portfolioData !== "undefined") {
 }
 
 console.log("ナビのアシスタントが起動しました！");
+
+
+// ============================================================
+// チャット画面の開閉
+// ============================================================
+
+const assistantWindow =
+    document.getElementById("assistant-window");
+
+const assistantToggle =
+    document.getElementById("assistant-toggle");
+
+const assistantClose =
+    document.getElementById("assistant-close");
+
+// チャットを開く・閉じる
+if (assistantToggle && assistantWindow) {
+
+    assistantToggle.addEventListener("click", () => {
+
+        assistantWindow.classList.toggle("active");
+
+        if (assistantWindow.classList.contains("active")) {
+            assistantInput.focus();
+        }
+
+    });
+
+}
+
+// 閉じるボタン
+if (assistantClose && assistantWindow) {
+
+    assistantClose.addEventListener("click", () => {
+
+        assistantWindow.classList.remove("active");
+
+    });
+
+}
+
