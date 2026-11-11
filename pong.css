@@ -1,1 +1,126 @@
 
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, #172d50, #050914);
+    color: white;
+    font-family: Arial, "Noto Sans JP", sans-serif;
+    text-align: center;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 25px;
+    background: rgba(5, 15, 35, 0.9);
+    border: 2px solid #35a6ff;
+    border-radius: 16px;
+    box-shadow: 0 0 25px rgba(53, 166, 255, 0.25);
+}
+
+h1 {
+    margin: 0;
+    font-size: 48px;
+    letter-spacing: 8px;
+    color: #70caff;
+    text-shadow: 0 0 15px #168cff;
+}
+
+.subtitle {
+    color: #b9dfff;
+    margin-bottom: 20px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    margin: 0 auto;
+    background: #050914;
+    border: 2px solid #4aaeff;
+    border-radius: 8px;
+    touch-action: none;
+}
+
+.system-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+button {
+    padding: 12px 25px;
+    border: 1px solid #70caff;
+    border-radius: 8px;
+    background: #123e70;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1765a8;
+    box-shadow: 0 0 12px #168cff;
+}
+
+.touch-controls {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin: 15px 0;
+}
+
+.touch-controls button {
+    width: 90px;
+    height: 55px;
+    font-size: 22px;
+    touch-action: none;
+    user-select: none;
+}
+
+.game-info {
+    color: #c4d9ef;
+    line-height: 1.8;
+}
+
+a {
+    display: inline-block;
+    margin-top: 12px;
+    color: #70caff;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    .game-container {
+        padding: 12px;
+    }
+
+    h1 {
+        font-size: 36px;
+    }
+
+    .touch-controls button {
+        width: 110px;
+        height: 65px;
+    }
+}
+
