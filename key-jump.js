@@ -9,7 +9,7 @@ const ctx = canvas.getContext("2d");
 const Scene = {
     Title: 0,
     GamePlay: 1,
-    GameClear: 2
+    GameClear: 2,HowToPlay: 3
 };
 
 let scene = Scene.Title;
@@ -333,19 +333,54 @@ function initializeMap() {
 initializeMap();
 
 
-// =========================
-// C++版と同じQキー開始
-// =========================
-
+//=============================
+// Title
+//==============================
 function updateTitle() {
 
+    // Qキー：ゲーム開始
     if (keys["KeyQ"]) {
 
         scene = Scene.GamePlay;
 
+        keys["KeyQ"] = false;
+
+        return;
+    }
+
+    // Eキー：説明書を開く
+    if (keys["KeyE"]) {
+
+        scene = Scene.HowToPlay;
+
+        keys["KeyE"] = false;
+
+        return;
     }
 
 }
+
+
+
+/* =========================
+   説明書画面の更新
+========================= */
+
+function updateHowToPlay() {
+
+    // Tキー：タイトルに戻る
+    if (keys["KeyT"]) {
+
+        scene = Scene.Title;
+
+        keys["KeyT"] = false;
+
+        return;
+    }
+
+}
+
+
 
 
 // =========================
@@ -877,6 +912,10 @@ function update(deltaTime) {
 
             break;
 
+            case Scene.HowToPlay:
+            updateHowToPlay();
+            break;
+
     }
 
 }
@@ -994,63 +1033,186 @@ function drawEnemies(scale) {
 }
 
 
-// =========================
-// タイトル描画
-// =========================
+
+/* =========================
+   タイトル画面
+========================= */
 
 function drawTitle() {
 
-    ctx.fillStyle = "#061b35";
+    // 背景
+    ctx.fillStyle = "#174D70";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    ctx.fillStyle = "#ffff00";
-
-    ctx.font = "bold 70px Arial";
-
+    // タイトル
     ctx.textAlign = "center";
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 76px Arial";
 
     ctx.fillText(
         "KEY JUMP",
         canvas.width / 2,
-        180
+        145
     );
 
-
-    ctx.font = "bold 40px Arial";
+    // サブタイトル
+    ctx.fillStyle = "#A8E8FF";
+    ctx.font = "25px Arial";
 
     ctx.fillText(
-        "START",
+        "キージャンプ",
         canvas.width / 2,
-        300
+        190
     );
 
+    // GAME START ボタン
+    ctx.fillStyle = "#287BA6";
+    ctx.fillRect(330, 240, 300, 65);
 
+    ctx.strokeStyle = "#A8E8FF";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(330, 240, 300, 65);
+
+    ctx.fillStyle = "#FFFFFF";
     ctx.font = "bold 30px Arial";
 
     ctx.fillText(
-        "Q",
+        "GAME START",
         canvas.width / 2,
-        370
+        282
     );
 
+    // HOW TO PLAY ボタン
+    ctx.fillStyle = "#287BA6";
+    ctx.fillRect(330, 330, 300, 65);
 
-    ctx.font = "20px Arial";
+    ctx.strokeStyle = "#A8E8FF";
+    ctx.strokeRect(330, 330, 300, 65);
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 27px Arial";
 
     ctx.fillText(
-        "Qキーでスタート",
+        "HOW TO PLAY",
         canvas.width / 2,
-        430
+        372
+    );
+
+    // 操作説明
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "19px Arial";
+
+    ctx.fillText(
+        "Q : GAME START     E : HOW TO PLAY",
+        canvas.width / 2,
+        445
     );
 
 }
 
+
+
+
+/* =========================
+   説明書画面
+========================= */
+
+function drawHowToPlay() {
+
+    // 背景
+    ctx.fillStyle = "#174D70";
+
+    ctx.fillRect(
+        0, 0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.textAlign = "center";
+
+    // タイトル
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 48px Arial";
+
+    ctx.fillText(
+        "HOW TO PLAY",
+        canvas.width / 2,
+        65
+    );
+
+    // 区切り線
+    ctx.strokeStyle = "#A8E8FF";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(150, 90);
+    ctx.lineTo(810, 90);
+    ctx.stroke();
+
+    // 操作方法の見出し
+    ctx.fillStyle = "#A8E8FF";
+    ctx.font = "bold 27px Arial";
+
+    ctx.fillText(
+        "操作方法",
+        canvas.width / 2,
+        135
+    );
+
+    // 操作方法
+    const controls = [
+        "←  →      左右に移動",
+        "W           移動速度アップ",
+        "SPACE      ジャンプ",
+        "Q           ゲームスタート",
+        "R           リトライ",
+        "T           タイトルに戻る"
+    ];
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "23px Arial";
+
+    controls.forEach((text, index) => {
+
+        ctx.fillText(
+            text,
+            canvas.width / 2,
+            180 + index * 38
+        );
+
+    });
+
+    // ゲームの目的
+    ctx.fillStyle = "#A8E8FF";
+    ctx.font = "bold 27px Arial";
+
+    ctx.fillText(
+        "ゲームの目的",
+        canvas.width / 2,
+        425
+    );
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "20px Arial";
+
+    ctx.fillText(
+        "敵を避けながら進み、ゴールを目指そう！",
+        canvas.width / 2,
+        460
+    );
+
+    // 戻る案内
+    ctx.fillStyle = "#A8E8FF";
+    ctx.font = "17px Arial";
+
+    ctx.fillText(
+        "Tキーでタイトルに戻る",
+        canvas.width / 2,
+        490
+    );
+
+}
 
 // =========================
 // クリア画面
@@ -1120,10 +1282,10 @@ function drawGameClear() {
 // 描画
 // =========================
 
+
 function render() {
 
     const scale = 0.5;
-
 
     ctx.clearRect(
         0,
@@ -1131,7 +1293,6 @@ function render() {
         canvas.width,
         canvas.height
     );
-
 
     if (scene === Scene.Title) {
 
@@ -1149,11 +1310,8 @@ function render() {
             canvas.height
         );
 
-
         drawMap(scale);
-
         drawPlayer(scale);
-
         drawEnemies(scale);
 
     }
@@ -1162,9 +1320,13 @@ function render() {
         drawGameClear();
 
     }
+    else if (scene === Scene.HowToPlay) {
+
+        drawHowToPlay();
+
+    }
 
 }
-
 
 // =========================
 // ゲームループ
