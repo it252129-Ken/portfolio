@@ -125,3 +125,62 @@ canvas {
     }
 
 }
+
+
+/* =========================
+   横向きスマホ専用
+========================= */
+
+@media (max-width: 767px) and (orientation: landscape) {
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+
+    body {
+        padding: 4px;
+    }
+
+    .game-container {
+        width: 100%;
+        max-width: none;
+        margin: 0 auto;
+    }
+
+    /* タイトルと説明を隠してゲーム画面を広くする */
+    .game-container > h1,
+    .game-container > p {
+        display: none;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+        max-height: calc(100dvh - 85px);
+        object-fit: contain;
+        margin: 0 auto;
+    }
+
+    /* 操作ボタン */
+    .mobile-controls {
+        width: 100%;
+        max-width: 700px;
+        padding: 5px 10px;
+        gap: 10px;
+    }
+
+    .mobile-controls button {
+        min-width: 60px;
+        height: 52px;
+        font-size: 17px;
+    }
+
+    .game-info {
+        display: none;
+    }
+}
+
