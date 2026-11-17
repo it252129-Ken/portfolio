@@ -1,1 +1,332 @@
 
+/* =========================
+   全体設定
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, "Noto Sans JP", sans-serif;
+    background: linear-gradient(135deg, #071d35, #0b4560, #087e8b);
+    color: white;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+
+/* =========================
+   ヘッダー
+========================= */
+
+.game-header {
+    text-align: center;
+    padding: 30px 15px;
+    background: rgba(0, 15, 35, 0.8);
+    border-bottom: 3px solid #36c5d8;
+}
+
+.game-header h1 {
+    font-size: 36px;
+    letter-spacing: 3px;
+    color: #7cecff;
+    text-shadow: 0 0 15px rgba(54, 197, 216, 0.6);
+}
+
+.game-header p {
+    margin-top: 8px;
+    color: #d4f7ff;
+}
+
+
+/* =========================
+   ゲーム全体
+========================= */
+
+.game-container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+
+/* =========================
+   城のHP
+========================= */
+
+.status-area {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.castle-status {
+    flex: 1;
+    padding: 18px;
+    background: rgba(0, 20, 40, 0.8);
+    border: 2px solid #36c5d8;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.castle-status h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #7cecff;
+}
+
+.castle-status p {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.enemy-status {
+    border-color: #ff7777;
+}
+
+.enemy-status h2 {
+    color: #ffaaaa;
+}
+
+
+/* =========================
+   素材エリア
+========================= */
+
+.material-area {
+    padding: 18px;
+    margin-bottom: 20px;
+    background: rgba(0, 20, 40, 0.8);
+    border: 1px solid #398fa8;
+    border-radius: 12px;
+}
+
+.material-area h2 {
+    margin-bottom: 12px;
+    color: #7cecff;
+}
+
+.material-list {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.material-list p {
+    font-size: 18px;
+    font-weight: bold;
+    color: #e3faff;
+}
+
+
+/* =========================
+   戦場
+========================= */
+
+.battle-area {
+    display: flex;
+    align-items: center;
+    min-height: 280px;
+    padding: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 3px solid #4bc8dc;
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(30, 150, 190, 0.15) 0%,
+            rgba(0, 80, 130, 0.3) 55%,
+            rgba(0, 35, 70, 0.9) 100%
+        ),
+        linear-gradient(#126b91, #063653);
+}
+
+.castle {
+    width: 100px;
+    flex-shrink: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.castle span {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.castle strong {
+    font-size: 55px;
+}
+
+.player-castle {
+    color: #8cecff;
+}
+
+.enemy-castle {
+    color: #ffaaaa;
+}
+
+#battle-field {
+    position: relative;
+    flex: 1;
+    height: 230px;
+    min-width: 0;
+    overflow: hidden;
+    border-bottom: 5px solid #8ed6a2;
+    background: rgba(0, 30, 60, 0.2);
+}
+
+.battle-message {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px #36c5d8;
+}
+
+
+/* =========================
+   生産エリア
+========================= */
+
+.production-area {
+    padding: 20px;
+    background: rgba(0, 20, 40, 0.85);
+    border: 2px solid #398fa8;
+    border-radius: 12px;
+}
+
+.production-area h2 {
+    margin-bottom: 15px;
+    color: #7cecff;
+}
+
+.production-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.production-buttons button {
+    flex: 1;
+    min-width: 160px;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #168ca5, #25b9c9);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.production-buttons button:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(135deg, #20b5cc, #55d8e5);
+    box-shadow: 0 5px 15px rgba(54, 197, 216, 0.3);
+}
+
+.production-buttons button:active {
+    transform: translateY(0);
+}
+
+.production-area p {
+    margin-top: 5px;
+    color: #d4f7ff;
+}
+
+
+/* =========================
+   ゲームメッセージ
+========================= */
+
+#game-message {
+    margin-top: 15px;
+    min-height: 30px;
+    text-align: center;
+    color: #fff49a;
+    font-weight: bold;
+}
+
+
+/* =========================
+   結果画面
+========================= */
+
+.result-screen {
+    display: none;
+    margin-top: 20px;
+    padding: 30px;
+    text-align: center;
+    background: rgba(0, 15, 35, 0.95);
+    border: 3px solid #7cecff;
+    border-radius: 15px;
+}
+
+.result-screen h2 {
+    font-size: 32px;
+    color: #7cecff;
+    margin-bottom: 10px;
+}
+
+
+/* =========================
+   スマートフォン対応
+========================= */
+
+@media (max-width: 700px) {
+
+    .game-header h1 {
+        font-size: 25px;
+    }
+
+    .status-area {
+        flex-direction: column;
+    }
+
+    .castle {
+        width: 65px;
+    }
+
+    .castle strong {
+        font-size: 38px;
+    }
+
+    .battle-area {
+        padding: 8px;
+        min-height: 240px;
+    }
+
+    #battle-field {
+        height: 200px;
+    }
+
+    .production-buttons {
+        flex-direction: column;
+    }
+
+    .production-buttons button {
+        width: 100%;
+    }
+
+    .material-list {
+        justify-content: flex-start;
+    }
+}
+
+
