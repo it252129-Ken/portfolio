@@ -23,12 +23,13 @@
             PORTFOLIO
         </div>
 
-        <nav>
-            <a href="#top">TOP</a>
-            <a href="#works">WORKS</a>
-            <a href="#work-detail">WORK DETAIL</a>
-            <a href="#profile">PROFILE</a>
-        </nav>
+       <nav>
+    <a href="#top">TOP</a>
+    <a href="#works">WORKS</a>
+    <a href="#work-detail">WORK DETAIL</a>
+    <a href="#profile">PROFILE</a>
+    <a href="#reviews">REVIEWS</a>
+</nav>
 
     </header>
 
@@ -662,6 +663,67 @@
 
         </section>
 
+
+<!-- =========================
+     REVIEWS
+========================= -->
+
+<section class="reviews" id="reviews">
+
+    <h2>
+        REVIEWS
+    </h2>
+
+    <p class="section-description">
+        みんなの感想
+    </p>
+
+    <p>
+        実際にゲームを遊んでいただいた方の
+        感想を募集しています。
+    </p>
+
+    <!-- 感想投稿フォーム -->
+
+    <div class="review-form">
+
+        <h3>感想を投稿する</h3>
+
+        <input
+            type="text"
+            id="review-name"
+            placeholder="ニックネーム"
+            maxlength="20"
+        >
+
+        <textarea
+            id="review-comment"
+            placeholder="ゲームの感想を書いてください..."
+            maxlength="500"
+        ></textarea>
+
+        <button id="review-submit">
+            投稿する
+        </button>
+
+    </div>
+
+    <!-- 感想一覧 -->
+
+    <div class="review-list">
+
+        <h3>みんなの感想</h3>
+
+        <div id="review-container">
+
+            <!-- JavaScriptで投稿内容を表示 -->
+
+        </div>
+
+    </div>
+
+</section>
+
     </main>
 
 
@@ -724,6 +786,8 @@
 
     <script src="games-data.js"></script>
     <script src="assistant.js"></script>
+
+    <script src="reviews.js"></script>
 
 </body>
 </html>
