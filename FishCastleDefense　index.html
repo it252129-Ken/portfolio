@@ -1,1 +1,110 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FISH CASTLE DEFENSE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="game-header">
+        <h1>FISH CASTLE DEFENSE</h1>
+        <p>魚の軍勢から城を守り、敵の城を攻略せよ！</p>
+    </header>
+
+    <main class="game-container">
+
+        <section class="status-area">
+
+            <div class="castle-status player-status">
+                <h2>PLAYER CASTLE</h2>
+                <p>HP：<span id="player-hp">300</span> / 300</p>
+            </div>
+
+            <div class="castle-status enemy-status">
+                <h2>ENEMY CASTLE</h2>
+                <p>HP：<span id="enemy-hp">300</span> / 300</p>
+            </div>
+
+        </section>
+
+        <section class="material-area">
+            <h2>所持素材</h2>
+
+            <div class="material-list">
+                <p> scales：<span id="scale-count">0</span></p>
+                <p> fillet：<span id="fillet-count">0</span></p>
+                <p> fin：<span id="fin-count">0</span></p>
+            </div>
+        </section>
+
+        <section class="battle-area">
+
+            <div class="castle player-castle">
+                <span>PLAYER</span>
+                <strong>🏰</strong>
+            </div>
+
+            <div id="battle-field">
+                <p class="battle-message">BATTLE START!</p>
+            </div>
+
+            <div class="castle enemy-castle">
+                <span>ENEMY</span>
+                <strong>🏯</strong>
+            </div>
+
+        </section>
+
+        <section class="production-area">
+            <h2>ユニット生産</h2>
+
+            <div class="production-buttons">
+                <button id="produce-fisherman">
+                    漁師を生産
+                </button>
+
+                <button id="produce-spearman">
+                    槍兵を生産
+                </button>
+
+                <button id="produce-archer">
+                    海の弓兵を生産
+                </button>
+            </div>
+
+            <p>味方ユニット数：
+                <span id="character-count">0</span> / 10
+            </p>
+
+            <p>敵ユニット数：
+                <span id="enemy-count">0</span>
+            </p>
+        </section>
+
+        <div id="game-message"></div>
+
+        <section id="result-screen" class="result-screen">
+            <h2 id="result-title"></h2>
+            <p id="result-description"></p>
+        </section>
+
+    </main>
+
+    <script src="js/Character.js"></script>
+    <script src="js/Enemy.js"></script>
+    <script src="js/Player.js"></script>
+    <script src="js/BattleSystem.js"></script>
+    <script src="js/MaterialSystem.js"></script>
+    <script src="js/ProductionSystem.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/GameManager.js"></script>
+    <script src="game.js"></script>
+
+</body>
+</html>
+
