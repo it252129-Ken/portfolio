@@ -923,3 +923,140 @@ footer {
         0 0 30px #35a6a5;
 }
 
+
+/* =========================
+   REVIEWS：みんなの感想
+========================= */
+
+.reviews {
+    padding: 120px 10%;
+    background: #17494e;
+    scroll-margin-top: 80px;
+}
+
+.review-form {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 35px;
+
+    background: #226068;
+    border: 1px solid #48a6a6;
+}
+
+.review-form h3,
+.review-list h3 {
+    color: #39d6c8;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+#review-name,
+#review-comment {
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 15px;
+
+    background: #123b40;
+    border: 1px solid #48a6a6;
+
+    color: white;
+    font-size: 15px;
+    outline: none;
+}
+
+#review-name:focus,
+#review-comment:focus {
+    border-color: #39d6c8;
+}
+
+#review-name::placeholder,
+#review-comment::placeholder {
+    color: #9bb8b8;
+}
+
+#review-comment {
+    min-height: 150px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+#review-submit {
+    padding: 12px 35px;
+
+    background: #39d6c8;
+    border: none;
+
+    color: #123b40;
+    font-size: 15px;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#review-submit:hover {
+    background: white;
+    transform: translateY(-3px);
+}
+
+.review-list {
+    max-width: 800px;
+    margin: 60px auto 0;
+}
+
+.review-card {
+    margin-bottom: 20px;
+    padding: 25px;
+
+    background: #226068;
+    border: 1px solid #48a6a6;
+}
+
+.review-card h4 {
+    color: #39d6c8;
+    font-size: 17px;
+    margin-bottom: 5px;
+}
+
+.review-date {
+    color: #9bb8b8;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+.review-comment {
+    color: #c3d8d8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.review-empty {
+    color: #9bb8b8;
+    padding: 25px;
+    text-align: center;
+    background: #226068;
+}
+
+/* スマホ対応 */
+
+@media (max-width: 700px) {
+
+    .reviews {
+        padding: 80px 7%;
+    }
+
+    .review-form {
+        padding: 22px;
+    }
+
+    .review-card {
+        padding: 20px;
+    }
+
+    #review-submit {
+        width: 100%;
+    }
+}
+
+
