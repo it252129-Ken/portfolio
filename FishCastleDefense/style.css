@@ -9,7 +9,7 @@
     box-sizing: border-box;
 }
 
-background-image: url("Resource/battle-background.png.png");
+body {
     font-family: Arial, "Noto Sans JP", sans-serif;
     background: linear-gradient(135deg, #071d35, #0b4560, #087e8b);
     color: white;
@@ -183,7 +183,7 @@ background-image: url("Resource/battle-background.png.png");
     overflow: hidden;
     border-bottom: 5px solid #8ed6a2;
 
-    background-image: url("assets/backgrounds/battle-background.png");
+   background-image: url("Resource/battle-background.png.png");
     background-size: cover;
     background-position: center;
 }
@@ -356,6 +356,35 @@ background-image: url("Resource/battle-background.png.png");
 
 #game-container {
     display: none;
+}
+
+
+/* =========================
+   キャラクター・敵の表示
+========================= */
+
+#character-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.unit-sprite {
+    position: absolute;
+    bottom: 0;
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    transition: none;
+}
+
+.unit-sprite.ally {
+    z-index: 2;
+}
+
+.unit-sprite.enemy {
+    z-index: 1;
 }
 
 
