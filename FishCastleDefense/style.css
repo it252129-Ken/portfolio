@@ -182,7 +182,10 @@ body {
     min-width: 0;
     overflow: hidden;
     border-bottom: 5px solid #8ed6a2;
-    background: rgba(0, 30, 60, 0.2);
+
+    background-image: url("assets/backgrounds/battle-background.png");
+    background-size: cover;
+    background-position: center;
 }
 
 .battle-message {
