@@ -95,6 +95,10 @@ class GameManager {
 
         const enemy = this.createEnemy();
 
+        // 敵を右側の城付近に出現させる
+　　　　　enemy.x = 850;
+
+　　　　// 敵を追加する
         this.enemies.push(enemy);
     }
 
