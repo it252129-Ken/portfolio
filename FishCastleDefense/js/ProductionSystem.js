@@ -30,7 +30,6 @@ class ProductionSystem {
                 attackInterval: 1.5,
                 speed: 40,
                 cost: {
-                    scale: 3,
                     fillet: 2
                 }
             },
@@ -42,7 +41,6 @@ class ProductionSystem {
                 attackInterval: 1.2,
                 speed: 45,
                 cost: {
-                    fillet: 2,
                     fin: 2
                 }
             }
