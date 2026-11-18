@@ -188,11 +188,17 @@ collectDefeatedEnemies() {
 }
 
     // 倒された味方を削除
-    removeDefeatedCharacters() {
-        this.characters = this.characters.filter(
-            character => character.isAlive()
-        );
+removeDefeatedCharacters() {
+
+    for (let i = this.characters.length - 1; i >= 0; i--) {
+
+        if (!this.characters[i].isAlive()) {
+            this.characters.splice(i, 1);
+        }
+
     }
+
+}
 
     // 城に到達した敵・味方を処理
     updateCastleBattle() {
@@ -221,10 +227,6 @@ collectDefeatedEnemies() {
             enemy => !enemy.isDead
         );
 
-        // 到達した味方を削除
-        this.characters = this.characters.filter(
-            character => character.isAlive()
-        );
     }
 
     updateUI() {
