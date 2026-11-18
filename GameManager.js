@@ -171,29 +171,21 @@ class GameManager {
     }
 
     // 倒された敵の素材を獲得
-    collectDefeatedEnemies() {
-        for (const enemy of this.enemies) {
-            if (enemy.isDead && !enemy.dropCollected) {
-                this.materialSystem.collectEnemyDrop(enemy);
+collectDefeatedEnemies() {
+    for (const enemy of this.enemies) {
+        if (enemy.isDead && !enemy.dropCollected) {
 
-                // プレイヤー側の素材にも反映
-                const drops = enemy.getMaterialDrop();
+            // 素材を獲得
+            this.materialSystem.collectEnemyDrop(enemy);
 
-                for (const materialName in drops) {
-                    this.player.addMaterial(
-                        materialName,
-                        drops[materialName]
-                    );
-                }
-
-                enemy.dropCollected = true;
-            }
+            enemy.dropCollected = true;
         }
-
-        this.enemies = this.enemies.filter(
-            enemy => !enemy.isDead
-        );
     }
+
+    this.enemies = this.enemies.filter(
+        enemy => !enemy.isDead
+    );
+}
 
     // 倒された味方を削除
     removeDefeatedCharacters() {
@@ -235,16 +227,16 @@ class GameManager {
         );
     }
 
-    // UI更新
-    updateUI(deltaTime) {
-        this.uiManager.update(
-            this.player,
-            this.enemyCastleHp,
-            this.enemies,
-            this.characters,
-            deltaTime
-        );
-    }
+    updateUI() {
+    this.uiManager.update(
+        this.player,
+        this.enemyCastleHp,
+        this.enemies,
+        this.characters,
+        0,
+        this.materialSystem.getMaterials()
+    );
+}
 
     // 勝敗判定
     checkGameResult() {
