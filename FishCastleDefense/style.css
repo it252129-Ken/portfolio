@@ -9,7 +9,7 @@
     box-sizing: border-box;
 }
 
-body {
+background-image: url("Resource/battle-background.png.png");
     font-family: Arial, "Noto Sans JP", sans-serif;
     background: linear-gradient(135deg, #071d35, #0b4560, #087e8b);
     color: white;
