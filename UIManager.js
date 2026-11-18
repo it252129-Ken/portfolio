@@ -12,15 +12,15 @@ class UIManager {
     }
 
     // ゲーム画面の情報を更新
-    update(player, enemyCastleHp, enemies, characters, deltaTime) {
+    update(player, enemyCastleHp, enemies, characters, deltaTime, materials) {
         // 城のHP表示
         this.updateText("player-hp", player.castleHp);
         this.updateText("enemy-hp", enemyCastleHp);
 
         // 素材の所持数表示
-        this.updateText("scale-count", player.materials.scale);
-        this.updateText("fillet-count", player.materials.fillet);
-        this.updateText("fin-count", player.materials.fin);
+        this.updateText("scale-count", materials.scale);
+        this.updateText("fillet-count", materials.fillet);
+        this.updateText("fin-count", materials.fin);
 
         // キャラクターと敵の数
         this.updateText("character-count", characters.length);
