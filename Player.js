@@ -1,5 +1,3 @@
-
-
 class Player {
     constructor() {
         // 城の情報
