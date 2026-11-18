@@ -4,8 +4,8 @@ class MaterialSystem {
         // 素材の初期所持数
         this.materials = {
             scale: 2,
-            fillet: 2,
-            fin: 2
+            fillet: 0,
+            fin: 0
         };
     }
 
