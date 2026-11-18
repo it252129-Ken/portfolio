@@ -1,5 +1,6 @@
 
 class UIManager {
+
     constructor() {
         // ゲームの状態
         this.gameState = "playing";
@@ -13,6 +14,7 @@ class UIManager {
 
     // ゲーム画面の情報を更新
     update(player, enemyCastleHp, enemies, characters, deltaTime, materials) {
+
         // 城のHP表示
         this.updateText("player-hp", player.castleHp);
         this.updateText("enemy-hp", enemyCastleHp);
@@ -29,24 +31,25 @@ class UIManager {
         // メッセージ表示時間
         if (this.messageTimer > 0) {
 
-    this.messageTimer -= deltaTime;
+            this.messageTimer -= deltaTime;
 
-    if (this.messageTimer <= 0) {
+            if (this.messageTimer <= 0) {
 
-        this.message = "";
+                this.message = "";
 
-        const messageElement = document.getElementById("game-message");
+                const messageElement =
+                    document.getElementById("game-message");
 
-        if (messageElement) {
-            messageElement.textContent = "";
-         }
-     }
- }
-
-}
+                if (messageElement) {
+                    messageElement.textContent = "";
+                }
+            }
+        }
+    }
 
     // HTML要素のテキストを更新
     updateText(id, value) {
+
         const element = document.getElementById(id);
 
         if (element) {
@@ -56,10 +59,12 @@ class UIManager {
 
     // メッセージを表示
     showMessage(message, duration = 2) {
+
         this.message = message;
         this.messageTimer = duration;
 
-        const element = document.getElementById("game-message");
+        const element =
+            document.getElementById("game-message");
 
         if (element) {
             element.textContent = message;
@@ -67,37 +72,66 @@ class UIManager {
     }
 
     // 勝利画面
-   showVictory() {
+    showVictory() {
 
-    this.gameState = "victory";
+        this.gameState = "victory";
 
-    const resultScreen = document.getElementById("result-screen");
-    const resultTitle = document.getElementById("result-title");
-    const resultDescription = document.getElementById("result-description");
+        const resultScreen =
+            document.getElementById("result-screen");
 
-    resultTitle.textContent = "VICTORY!";
-    resultDescription.textContent = "敵の城を攻略しました！";
+        const resultTitle =
+            document.getElementById("result-title");
 
-    resultScreen.style.display = "block";
-}
+        const resultDescription =
+            document.getElementById("result-description");
+
+        if (resultTitle) {
+            resultTitle.textContent = "VICTORY!";
+        }
+
+        if (resultDescription) {
+            resultDescription.textContent =
+                "敵の城を攻略しました！";
+        }
+
+        if (resultScreen) {
+            resultScreen.style.display = "block";
+        }
+    }
 
     // 敗北画面
-   showDefeat() {
+    showDefeat() {
 
-    this.gameState = "defeat";
+        this.gameState = "defeat";
 
-    const resultScreen = document.getElementById("result-screen");
-    const resultTitle = document.getElementById("result-title");
-    const resultDescription = document.getElementById("result-description");
+        const resultScreen =
+            document.getElementById("result-screen");
 
-    resultTitle.textContent = "DEFEAT...";
-    resultDescription.textContent = "自分の城が陥落しました……";
+        const resultTitle =
+            document.getElementById("result-title");
 
-    resultScreen.style.display = "block";
-}
+        const resultDescription =
+            document.getElementById("result-description");
+
+        if (resultTitle) {
+            resultTitle.textContent = "DEFEAT...";
+        }
+
+        if (resultDescription) {
+            resultDescription.textContent =
+                "自分の城が陥落しました……";
+        }
+
+        if (resultScreen) {
+            resultScreen.style.display = "block";
+        }
+    }
+
     // 結果画面を非表示
     hideResult() {
-        const element = document.getElementById("result-screen");
+
+        const element =
+            document.getElementById("result-screen");
 
         if (element) {
             element.style.display = "none";
@@ -106,4 +140,3 @@ class UIManager {
         this.gameState = "playing";
     }
 }
-
