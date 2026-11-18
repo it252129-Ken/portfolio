@@ -4,14 +4,12 @@
    ゲーム起動処理
 ========================= */
 
-// ゲーム管理クラス
 let gameManager = null;
-
-// 前回のフレーム時間
 let lastTime = 0;
-
-// ゲームが動作中か
 let isRunning = false;
+
+// タイトル画面を表示中か
+let isTitleScreen = true;
 
 
 /* =========================
@@ -20,7 +18,20 @@ let isRunning = false;
 
 function startGame() {
 
+    // 二重起動を防止
+    if (isRunning) {
+        return;
+    }
+
     console.log("FISH CASTLE DEFENSE START!");
+
+    // タイトル画面を隠す
+    document.getElementById("title-screen").style.display = "none";
+
+    // ゲーム画面を表示
+    document.getElementById("game-container").style.display = "block";
+
+    isTitleScreen = false;
 
     // ゲーム管理クラスを作成
     gameManager = new GameManager();
@@ -47,12 +58,10 @@ function gameLoop(currentTime) {
         return;
     }
 
-    // 経過時間を計算（秒）
     const deltaTime = (currentTime - lastTime) / 1000;
 
     lastTime = currentTime;
 
-    // ゲーム更新
     if (gameManager && !gameManager.isGameOver) {
 
         gameManager.update(deltaTime);
@@ -65,7 +74,6 @@ function gameLoop(currentTime) {
         return;
     }
 
-    // 次のフレーム
     requestAnimationFrame(gameLoop);
 }
 
@@ -89,7 +97,9 @@ function setupProductionButtons() {
     // 漁師
     fishermanButton.addEventListener("click", () => {
 
-        gameManager.produceCharacter("fisherman");
+        if (gameManager && isRunning) {
+            gameManager.produceCharacter("fisherman");
+        }
 
     });
 
@@ -97,7 +107,9 @@ function setupProductionButtons() {
     // 槍兵
     spearmanButton.addEventListener("click", () => {
 
-        gameManager.produceCharacter("spearman");
+        if (gameManager && isRunning) {
+            gameManager.produceCharacter("spearman");
+        }
 
     });
 
@@ -105,7 +117,32 @@ function setupProductionButtons() {
     // 海の弓兵
     archerButton.addEventListener("click", () => {
 
-        gameManager.produceCharacter("archer");
+        if (gameManager && isRunning) {
+            gameManager.produceCharacter("archer");
+        }
+
+    });
+
+}
+
+
+/* =========================
+   キーボード操作
+========================= */
+
+function setupKeyboard() {
+
+    window.addEventListener("keydown", (event) => {
+
+        // タイトル画面でSキーを押す
+        if (
+            isTitleScreen &&
+            event.key.toLowerCase() === "s"
+        ) {
+
+            startGame();
+
+        }
 
     });
 
@@ -118,12 +155,10 @@ function setupProductionButtons() {
 
 window.addEventListener("DOMContentLoaded", () => {
 
-    // ボタン設定
+    // 生産ボタン設定
     setupProductionButtons();
 
-    // ゲーム開始
-    startGame();
+    // キーボード設定
+    setupKeyboard();
 
 });
-
-
