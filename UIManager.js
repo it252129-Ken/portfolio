@@ -28,13 +28,22 @@ class UIManager {
 
         // メッセージ表示時間
         if (this.messageTimer > 0) {
-            this.messageTimer -= deltaTime;
 
-            if (this.messageTimer <= 0) {
-                this.message = "";
-            }
-        }
-    }
+    this.messageTimer -= deltaTime;
+
+    if (this.messageTimer <= 0) {
+
+        this.message = "";
+
+        const messageElement = document.getElementById("game-message");
+
+        if (messageElement) {
+            messageElement.textContent = "";
+         }
+     }
+ }
+
+}
 
     // HTML要素のテキストを更新
     updateText(id, value) {
@@ -58,29 +67,34 @@ class UIManager {
     }
 
     // 勝利画面
-    showVictory() {
-        this.gameState = "victory";
+   showVictory() {
 
-        const element = document.getElementById("result-screen");
+    this.gameState = "victory";
 
-        if (element) {
-            element.textContent = "VICTORY!";
-            element.style.display = "block";
-        }
-    }
+    const resultScreen = document.getElementById("result-screen");
+    const resultTitle = document.getElementById("result-title");
+    const resultDescription = document.getElementById("result-description");
+
+    resultTitle.textContent = "VICTORY!";
+    resultDescription.textContent = "敵の城を攻略しました！";
+
+    resultScreen.style.display = "block";
+}
 
     // 敗北画面
-    showDefeat() {
-        this.gameState = "defeat";
+   showDefeat() {
 
-        const element = document.getElementById("result-screen");
+    this.gameState = "defeat";
 
-        if (element) {
-            element.textContent = "DEFEAT...";
-            element.style.display = "block";
-        }
-    }
+    const resultScreen = document.getElementById("result-screen");
+    const resultTitle = document.getElementById("result-title");
+    const resultDescription = document.getElementById("result-description");
 
+    resultTitle.textContent = "DEFEAT...";
+    resultDescription.textContent = "自分の城が陥落しました……";
+
+    resultScreen.style.display = "block";
+}
     // 結果画面を非表示
     hideResult() {
         const element = document.getElementById("result-screen");
