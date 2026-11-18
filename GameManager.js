@@ -229,13 +229,13 @@ removeDefeatedCharacters() {
 
     }
 
-    updateUI() {
+    updateUI(deltaTime) {
     this.uiManager.update(
         this.player,
         this.enemyCastleHp,
         this.enemies,
         this.characters,
-        0,
+        deltaTime,
         this.materialSystem.getMaterials()
     );
 }
