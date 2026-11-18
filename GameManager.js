@@ -10,6 +10,9 @@ class GameManager {
         // 味方と敵
         this.characters = [];
         this.enemies = [];
+        
+        // 画面に表示する画像要素
+　　　　this.unitElements = new Map();
 
         // 戦闘管理
         this.battleSystem = new BattleSystem();
@@ -59,6 +62,9 @@ class GameManager {
 
         // キャラクターの移動
         this.updateMovement(deltaTime);
+
+        // キャラクターと敵の画像を更新
+　　　　　this.updateUnitDisplay();
 
         // 自動戦闘
         this.battleSystem.update(
@@ -258,5 +264,75 @@ removeDefeatedCharacters() {
     produceCharacter(type) {
         return this.productionSystem.produceCharacter(type);
     }
+
+
+
+// キャラクターと敵の画像を表示・更新
+updateUnitDisplay() {
+
+    const layer = document.getElementById("character-layer");
+
+    if (!layer) {
+        return;
+    }
+
+    // 味方と敵をまとめる
+    const units = [
+        ...this.characters.map(unit => ({
+            unit: unit,
+            type: "ally"
+        })),
+
+        ...this.enemies.map(unit => ({
+            unit: unit,
+            type: "enemy"
+        }))
+    ];
+
+    const activeUnits = new Set();
+
+    for (const data of units) {
+
+        const unit = data.unit;
+
+        activeUnits.add(unit);
+
+        // 画像要素を取得
+        let image = this.unitElements.get(unit);
+
+        // まだ画像がない場合は作成
+        if (!image) {
+
+            image = document.createElement("img");
+
+            image.className = "unit-sprite " + data.type;
+
+            image.src = unit.imagePath;
+
+            image.alt = unit.name;
+
+            layer.appendChild(image);
+
+            this.unitElements.set(unit, image);
+        }
+
+        // 画像の位置を更新
+        image.style.left = unit.x + "px";
+        image.style.bottom = "0px";
+    }
+
+    // 倒されたキャラクターなどの画像を削除
+    for (const [unit, image] of this.unitElements) {
+
+        if (!activeUnits.has(unit)) {
+
+            image.remove();
+
+            this.unitElements.delete(unit);
+        }
+    }
+}
+
+    
 }
 
