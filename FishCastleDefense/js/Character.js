@@ -28,6 +28,12 @@ class Character {
         // 状態
         this.isDead = false;
         this.isAttacking = false;
+
+        // アニメーション管理
+        this.animationState = "idle";
+        this.animationFrame = 0;
+        this.animationTimer = 0;
+        this.frameDuration = 0.15;
     }
 
     // キャラクター画像のパスを取得
@@ -40,6 +46,40 @@ class Character {
         };
 
         return imagePaths[name] || "";
+    }
+
+    // アニメーション状態を変更
+    setAnimation(state) {
+
+        if (this.animationState === state) {
+            return;
+        }
+
+        this.animationState = state;
+        this.animationFrame = 0;
+        this.animationTimer = 0;
+    }
+
+    // アニメーションを更新
+    updateAnimation(deltaTime, frameCount) {
+
+        if (frameCount <= 1) {
+            this.animationFrame = 0;
+            return;
+        }
+
+        this.animationTimer += deltaTime;
+
+        if (this.animationTimer >= this.frameDuration) {
+
+            this.animationTimer = 0;
+
+            this.animationFrame++;
+
+            if (this.animationFrame >= frameCount) {
+                this.animationFrame = 0;
+            }
+        }
     }
 
     // ダメージを受ける
@@ -71,4 +111,3 @@ class Character {
         return !this.isDead;
     }
 }
-
