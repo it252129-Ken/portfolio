@@ -395,57 +395,80 @@ updateUnitDisplay() {
         return;
     }
 
-    // 味方と敵をまとめる
-    const units = [
-        ...this.characters.map(unit => ({
-            unit: unit,
-            type: "ally"
-        })),
-
-        ...this.enemies.map(unit => ({
-            unit: unit,
-            type: "enemy"
-        }))
-    ];
-
     const activeUnits = new Set();
 
-    for (const data of units) {
+    // =========================
+    // 味方キャラクターの表示
+    // =========================
 
-        const unit = data.unit;
+    for (const character of this.characters) {
 
-        activeUnits.add(unit);
+        activeUnits.add(character);
 
-        // 画像要素を取得
-        let image = this.unitElements.get(unit);
+        let canvas = this.unitElements.get(character);
 
-        // まだ画像がない場合は作成
+        if (!canvas) {
+
+            canvas = document.createElement("canvas");
+
+            canvas.className = "unit-sprite ally";
+
+            canvas.width = 200;
+            canvas.height = 200;
+
+            canvas.style.position = "absolute";
+
+            layer.appendChild(canvas);
+
+            this.unitElements.set(character, canvas);
+        }
+
+        canvas.style.left = character.x + "px";
+        canvas.style.bottom = "0px";
+
+        this.drawAllySprite(canvas, character);
+    }
+
+
+    // =========================
+    // 敵キャラクターの表示
+    // =========================
+
+    for (const enemy of this.enemies) {
+
+        activeUnits.add(enemy);
+
+        let image = this.unitElements.get(enemy);
+
         if (!image) {
 
             image = document.createElement("img");
 
-            image.className = "unit-sprite " + data.type;
+            image.className = "unit-sprite enemy";
 
-            image.src = unit.imagePath;
+            image.src = enemy.imagePath;
 
-            image.alt = unit.name;
+            image.alt = enemy.name;
 
             layer.appendChild(image);
 
-            this.unitElements.set(unit, image);
+            this.unitElements.set(enemy, image);
         }
 
-        // 画像の位置を更新
-        image.style.left = unit.x + "px";
+        image.style.left = enemy.x + "px";
         image.style.bottom = "0px";
     }
 
-    // 倒されたキャラクターなどの画像を削除
-    for (const [unit, image] of this.unitElements) {
+
+    // =========================
+    // 不要な画像を削除
+    // =========================
+
+    for (const [unit, element] of this.unitElements) {
 
         if (!activeUnits.has(unit)) {
 
-            image.remove();
+            element.remove();
 
             this.unitElements.delete(unit);
         }
