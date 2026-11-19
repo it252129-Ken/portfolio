@@ -34,9 +34,9 @@ class Character {
     getImagePath(name) {
 
         const imagePaths = {
-            "漁師": "Resource/魚屋さん.png",
-            "槍兵": "Resource/赤の金魚.png",
-            "弓兵": "Resource/黒い金魚.png"
+            "漁師": "Resource/漁師.png",
+            "槍兵": "Resource/魚の槍兵.png",
+            "弓兵": "Resource/魚の弓兵.png"
         };
 
         return imagePaths[name] || "";
