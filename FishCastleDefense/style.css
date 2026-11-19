@@ -370,21 +370,22 @@ body {
     pointer-events: none;
 }
 
+
 .unit-sprite {
     position: absolute;
     bottom: 0;
     width: 65px;
     height: 65px;
-    object-fit: contain;
     transition: none;
 }
 
 .unit-sprite.ally {
     z-index: 2;
+    width: 90px;
+    height: 90px;
+    image-rendering: pixelated;
 }
 
 .unit-sprite.enemy {
     z-index: 1;
 }
-
-
