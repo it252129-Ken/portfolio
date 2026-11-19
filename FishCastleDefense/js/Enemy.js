@@ -34,7 +34,7 @@ class Enemy {
     getImagePath(name) {
 
         const imagePaths = {
-            "小魚": "Resource/赤の金魚.png",
+            "小魚": "Resource/クラゲ.png",
             "ピラニア": "Resource/エイ.png",
             "サメ": "Resource/サメ.png"
         };
