@@ -14,6 +14,9 @@ class GameManager {
         // 画面に表示する画像要素
 　　　　this.unitElements = new Map();
 
+        // 味方キャラクターのアニメーション画像を読み込む
+　　　　this.loadSpriteSheets();
+
         // 戦闘管理
         this.battleSystem = new BattleSystem();
 
