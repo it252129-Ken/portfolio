@@ -32,6 +32,9 @@ class BattleSystem {
             // 攻撃開始
             character.isAttacking = true;
 
+            // 攻撃アニメーションに切り替え
+　　　　　　character.setAnimation("attack");
+
             if (character.canAttack(deltaTime)) {
                 target.takeDamage(character.attack);
 
