@@ -416,6 +416,9 @@ updateUnitDisplay() {
             canvas.width = 200;
             canvas.height = 200;
 
+            canvas.style.width = "65px";
+　　　　　　　canvas.style.height = "65px";
+
             canvas.style.position = "absolute";
 
             layer.appendChild(canvas);
