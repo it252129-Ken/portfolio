@@ -156,18 +156,32 @@ class GameManager {
     }
 
     // キャラクターと敵の移動
+  
+    // キャラクターと敵の移動
     updateMovement(deltaTime) {
-        // 味方は右へ移動
+
+        // 味方の移動
         for (const character of this.characters) {
-            if (!character.isAlive() || character.isAttacking) {
+
+            if (!character.isAlive()) {
                 continue;
             }
 
+            // 攻撃中は移動しない
+            if (character.isAttacking) {
+                continue;
+            }
+
+            // 歩行アニメーションにする
+            character.setAnimation("walk");
+
+            // 移動
             character.x += character.speed * deltaTime;
         }
 
-        // 敵は左へ移動
+        // 敵の移動
         for (const enemy of this.enemies) {
+
             if (!enemy.isAlive() || enemy.isAttacking) {
                 continue;
             }
@@ -175,6 +189,7 @@ class GameManager {
             enemy.x -= enemy.speed * deltaTime;
         }
     }
+
 
     // 倒された敵の素材を獲得
 collectDefeatedEnemies() {
