@@ -282,6 +282,33 @@ removeDefeatedCharacters() {
 
 
 
+    // キャラクターのアニメーション画像を読み込む
+    loadSpriteSheets() {
+
+        const paths = {
+            "漁師": "Resource/漁師.png",
+            "槍兵": "Resource/魚の槍兵.png",
+            "弓兵": "Resource/魚の弓兵.png"
+        };
+
+        if (!this.spriteSheets) {
+            this.spriteSheets = {};
+        }
+
+        for (const name in paths) {
+
+            if (this.spriteSheets[name]) {
+                continue;
+            }
+
+            const image = new Image();
+            image.src = paths[name];
+
+            this.spriteSheets[name] = image;
+        }
+    }
+
+
 // キャラクターと敵の画像を表示・更新
 updateUnitDisplay() {
 
