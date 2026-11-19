@@ -17,6 +17,80 @@ class GameManager {
         // 味方キャラクターのアニメーション画像を読み込む
 　　　　this.loadSpriteSheets();
 
+        // 味方キャラクターのアニメーション設定
+getAnimationSettings(name) {
+
+    const settings = {
+
+        "漁師": {
+            idle: [],
+            walk: [],
+            attack: []
+        },
+
+        "槍兵": {
+            idle: [],
+            walk: [],
+            attack: []
+        },
+
+        "弓兵": {
+            idle: [],
+            walk: [],
+            attack: []
+        }
+
+    };
+
+    return settings[name] || null;
+}
+
+        // 味方キャラクターをCanvasで描画
+drawAllySprite(canvas, character) {
+
+    const context = canvas.getContext("2d");
+
+    const image = this.spriteSheets[character.name];
+
+    if (!image || !image.complete || image.naturalWidth === 0) {
+        return;
+    }
+
+    // アニメーション設定を取得
+    const settings = this.getAnimationSettings(character.name);
+
+    if (!settings) {
+        return;
+    }
+
+    const animation = settings[character.animationState];
+
+    if (!animation || animation.length === 0) {
+        return;
+    }
+
+    // 現在のコマを取得
+    const frame = animation[character.animationFrame];
+
+    // Canvasをクリア
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 画像から指定範囲を切り出して描画
+    context.drawImage(
+        image,
+        frame.x,
+        frame.y,
+        frame.width,
+        frame.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+}
+        
+        
+
         // 戦闘管理
         this.battleSystem = new BattleSystem();
 
