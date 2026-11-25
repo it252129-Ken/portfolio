@@ -297,18 +297,41 @@ enemyAttack(attacker, target) {
 
 
     /* =========================
-       戦闘ログを追加
-    ========================= */
+   戦闘ログを追加
+========================= */
 
-    addLog(message) {
+addLog(message) {
 
-        this.battleLog.push(message);
+    this.battleLog.push(message);
 
-        // ログは最新20件まで保持
-        if (this.battleLog.length > 20) {
-            this.battleLog.shift();
-        }
+    // ログは最新20件まで保持
+    if (this.battleLog.length > 20) {
+        this.battleLog.shift();
     }
+
+    // 画面を更新
+    this.updateUI();
+}
+
+
+/* =========================
+   戦闘画面を更新
+========================= */
+
+updateUI() {
+
+    // UIManagerが存在する場合
+    if (this.gameManager.uiManager) {
+
+        // ステータスを更新
+        this.gameManager.uiManager.updateStatus();
+
+        // 戦闘ログを更新
+        this.gameManager.uiManager.updateBattleLog(
+            this.battleLog
+        );
+    }
+}
 
 
     /* =========================
