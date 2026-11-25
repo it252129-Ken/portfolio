@@ -1,1 +1,202 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fantasy RPG</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         タイトル画面
+    ========================= -->
+
+    <section id="title-screen" class="screen">
+
+        <h1>FANTASY RPG</h1>
+
+        <p>4人の仲間と幻想世界を冒険しよう！</p>
+
+        <button id="start-button">
+            GAME START
+        </button>
+
+    </section>
+
+
+    <!-- =========================
+         マップ選択画面
+    ========================= -->
+
+    <section id="map-screen" class="screen hidden">
+
+        <h1>マップを選択してください</h1>
+
+        <div id="map-container">
+
+            <!-- 緑の平原 -->
+            <button class="map-card" data-map="grassland">
+
+                <img src="Resource/Maps/grassland.png"
+                     alt="緑の平原">
+
+                <h2>緑の平原</h2>
+
+                <p>難易度：★☆☆☆☆</p>
+
+                <p>広大な草原が広がる平和な大地。</p>
+
+            </button>
+
+
+            <!-- 灼熱の火山 -->
+            <button class="map-card" data-map="volcano">
+
+                <img src="Resource/Maps/volcano.png"
+                     alt="灼熱の火山">
+
+                <h2>灼熱の火山</h2>
+
+                <p>難易度：★★☆☆☆</p>
+
+                <p>燃え盛る火山の地。</p>
+
+            </button>
+
+
+            <!-- 氷結の雪山 -->
+            <button class="map-card" data-map="snow">
+
+                <img src="Resource/Maps/snow.png"
+                     alt="氷結の雪山">
+
+                <h2>氷結の雪山</h2>
+
+                <p>難易度：★★★☆☆</p>
+
+                <p>凍てつく雪の山脈。</p>
+
+            </button>
+
+
+            <!-- 暗黒の古城 -->
+            <button class="map-card" data-map="castle">
+
+                <img src="Resource/Maps/castle.png"
+                     alt="暗黒の古城">
+
+                <h2>暗黒の古城</h2>
+
+                <p>難易度：★★★★☆</p>
+
+                <p>魔王が待ち受ける呪われた城。</p>
+
+            </button>
+
+        </div>
+
+        <button id="map-back-button">
+            戻る
+        </button>
+
+    </section>
+
+
+    <!-- =========================
+         戦闘画面
+    ========================= -->
+
+    <section id="battle-screen" class="screen hidden">
+
+        <h1 id="battle-map-name">BATTLE</h1>
+
+        <!-- 戦闘背景・キャラクター描画用 -->
+        <div id="battle-container">
+
+            <canvas id="battle-canvas"
+                    width="960"
+                    height="540">
+            </canvas>
+
+        </div>
+
+
+        <!-- 戦闘メッセージ -->
+        <div id="battle-message">
+            戦闘開始！
+        </div>
+
+
+        <!-- 味方のステータス -->
+        <div id="party-status">
+
+            <div class="character-status" id="swordsman-status">
+                <h3>剣士</h3>
+                <p>HP：<span id="swordsman-hp">200</span></p>
+                <p>MP：<span id="swordsman-mp">30</span></p>
+            </div>
+
+            <div class="character-status" id="mage-status">
+                <h3>魔法使い</h3>
+                <p>HP：<span id="mage-hp">120</span></p>
+                <p>MP：<span id="mage-mp">100</span></p>
+            </div>
+
+            <div class="character-status" id="priest-status">
+                <h3>僧侶</h3>
+                <p>HP：<span id="priest-hp">140</span></p>
+                <p>MP：<span id="priest-mp">80</span></p>
+            </div>
+
+            <div class="character-status" id="archer-status">
+                <h3>弓使い</h3>
+                <p>HP：<span id="archer-hp">150</span></p>
+                <p>MP：<span id="archer-mp">40</span></p>
+            </div>
+
+        </div>
+
+
+        <!-- コマンド選択 -->
+        <div id="command-container">
+
+            <h2>行動を選択してください</h2>
+
+            <div id="command-buttons">
+
+                <button id="attack-button">
+                    こうげき
+                </button>
+
+                <button id="skill-button">
+                    スキル
+                </button>
+
+                <button id="defend-button">
+                    ぼうぎょ
+                </button>
+
+                <button id="item-button">
+                    アイテム
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- JavaScript -->
+    <script type="module" src="main.js"></script>
+
+</body>
+
+</html>
+
