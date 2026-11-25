@@ -36,9 +36,17 @@ export default class BattleSystem {
             return false;
         }
 
+        // 戦闘状態を初期化
+        this.isActive = false;
+
+        this.battleLog = [];
+
+        this.rewardedEnemyIds.clear();
+
         // 敵を生成
         this.gameManager.initializeEnemies();
 
+        // 敵が生成されたか確認
         if (
             !this.gameManager.enemies ||
             this.gameManager.enemies.length === 0
@@ -48,12 +56,6 @@ export default class BattleSystem {
 
             return false;
         }
-
-        // 戦闘ログを初期化
-        this.battleLog = [];
-
-        // 経験値獲得履歴を初期化
-        this.rewardedEnemyIds.clear();
 
         // 戦闘開始
         this.isActive = true;
@@ -81,6 +83,10 @@ export default class BattleSystem {
         }
 
         if (!attacker || !attacker.isAlive()) {
+            return false;
+        }
+
+        if (!this.gameManager.party.includes(attacker)) {
             return false;
         }
 
@@ -191,7 +197,7 @@ export default class BattleSystem {
 
     rewardEnemy(enemy) {
 
-        if (!enemy) {
+        if (!enemy || !enemy.id) {
             return;
         }
 
@@ -229,6 +235,10 @@ export default class BattleSystem {
         }
 
         if (!healer || !healer.isAlive()) {
+            return false;
+        }
+
+        if (!this.gameManager.party.includes(healer)) {
             return false;
         }
 
@@ -328,21 +338,8 @@ export default class BattleSystem {
             enemy => enemy.isAlive()
         );
 
-        // 生存している味方
-        const party = this.gameManager.party.filter(
-            character => character.isAlive()
-        );
-
         // 敵がいない場合
         if (enemies.length === 0) {
-
-            this.checkBattleResult();
-
-            return false;
-        }
-
-        // 味方がいない場合
-        if (party.length === 0) {
 
             this.checkBattleResult();
 
@@ -357,12 +354,21 @@ export default class BattleSystem {
                 break;
             }
 
+            // 攻撃する敵が倒されていた場合
+            if (!enemy.isAlive()) {
+                continue;
+            }
+
             // 生存している味方を再取得
             const aliveParty = this.gameManager.party.filter(
                 character => character.isAlive()
             );
 
+            // 味方が全滅している場合
             if (aliveParty.length === 0) {
+
+                this.checkBattleResult();
+
                 break;
             }
 
@@ -376,7 +382,9 @@ export default class BattleSystem {
 
         // 防御状態を解除
         this.gameManager.party.forEach(character => {
+
             character.resetDefending();
+
         });
 
         // UI更新
@@ -436,21 +444,27 @@ export default class BattleSystem {
             return;
         }
 
+        if (result !== "victory" && result !== "defeat") {
+            return;
+        }
+
+        // 戦闘終了
         this.isActive = false;
 
         if (result === "victory") {
 
             this.addLog("敵をすべて倒した！勝利！");
 
-        }
-        else {
+        } else {
 
             this.addLog("パーティーは全滅した……");
 
         }
 
+        // GameManagerに結果を通知
         this.gameManager.finishBattle(result);
 
+        // UI更新
         this.updateUI();
     }
 
@@ -465,7 +479,9 @@ export default class BattleSystem {
 
         // ログは最大30件
         if (this.battleLog.length > 30) {
+
             this.battleLog.shift();
+
         }
 
         this.updateBattleLog();
