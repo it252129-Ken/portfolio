@@ -1,61 +1,53 @@
 
 /* =========================
    CHRONICLES OF FOURIA
-   画面管理クラス
+   画面・UI管理クラス
 ========================= */
 
 export default class UIManager {
 
     constructor(gameManager) {
 
-        // ゲーム管理クラス
         this.gameManager = gameManager;
 
-        // 画面表示用の要素
-        this.elements = {
+        // 画面
+        this.titleScreen = document.getElementById("title-screen");
+        this.mapScreen = document.getElementById("map-screen");
+        this.battleScreen = document.getElementById("battle-screen");
+        this.resultScreen = document.getElementById("result-screen");
 
-            title: document.getElementById("title-screen"),
+        // マップ
+        this.mapContainer = document.getElementById("map-container");
 
-            map: document.getElementById("map-screen"),
+        // 戦闘画面
+        this.battleMapName = document.getElementById("battle-map-name");
+        this.battleMessage = document.getElementById("battle-message");
 
-            battle: document.getElementById("battle-screen"),
+        // ステータス
+        this.partyStatus = document.getElementById("party-status");
+        this.enemyStatus = document.getElementById("enemy-status");
 
-            result: document.getElementById("result-screen"),
+        // 戦闘ログ
+        this.battleLog = document.getElementById("battle-log");
 
-            mapList: document.getElementById("map-list"),
+        // 結果画面
+        this.resultTitle = document.getElementById("result-title");
+        this.resultDescription = document.getElementById("result-description");
 
-            partyStatus: document.getElementById("party-status"),
-
-            enemyStatus: document.getElementById("enemy-status"),
-
-            battleLog: document.getElementById("battle-log"),
-
-            resultTitle: document.getElementById("result-title"),
-
-            resultDescription: document.getElementById("result-description")
-        };
+        console.log("UIManager initialized");
     }
 
 
     /* =========================
-       すべての画面を非表示
+       全画面を非表示
     ========================= */
 
     hideAllScreens() {
 
-        const screens = [
-            this.elements.title,
-            this.elements.map,
-            this.elements.battle,
-            this.elements.result
-        ];
-
-        for (const screen of screens) {
-
-            if (screen) {
-                screen.style.display = "none";
-            }
-        }
+        this.titleScreen.classList.add("hidden");
+        this.mapScreen.classList.add("hidden");
+        this.battleScreen.classList.add("hidden");
+        this.resultScreen.classList.add("hidden");
     }
 
 
@@ -67,9 +59,7 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        if (this.elements.title) {
-            this.elements.title.style.display = "flex";
-        }
+        this.titleScreen.classList.remove("hidden");
     }
 
 
@@ -81,11 +71,7 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        if (this.elements.map) {
-            this.elements.map.style.display = "block";
-        }
-
-        this.updateMapList();
+        this.mapScreen.classList.remove("hidden");
     }
 
 
@@ -97,9 +83,7 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        if (this.elements.battle) {
-            this.elements.battle.style.display = "block";
-        }
+        this.battleScreen.classList.remove("hidden");
 
         this.updateStatus();
     }
@@ -113,60 +97,42 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        if (this.elements.result) {
-            this.elements.result.style.display = "flex";
-        }
+        this.resultScreen.classList.remove("hidden");
 
         if (result === "victory") {
 
-            this.elements.resultTitle.textContent = "VICTORY!";
+            this.resultTitle.textContent = "VICTORY!";
 
-            this.elements.resultDescription.textContent =
-                "敵をすべて倒した！冒険の勝利だ！";
+            this.resultDescription.textContent =
+                "敵をすべて倒しました！";
 
         } else {
 
-            this.elements.resultTitle.textContent = "GAME OVER";
+            this.resultTitle.textContent = "GAME OVER";
 
-            this.elements.resultDescription.textContent =
+            this.resultDescription.textContent =
                 "パーティーは全滅してしまった……";
         }
     }
 
 
     /* =========================
-       マップ一覧を更新
+       マップ名の更新
     ========================= */
 
-    updateMapList() {
+    updateMapName() {
 
-        const container = this.elements.mapList;
-
-        if (!container) {
+        if (!this.gameManager.currentMap) {
             return;
         }
 
-        container.innerHTML = "";
-
-        for (const map of Object.values(this.gameManager.maps)) {
-
-            const button = document.createElement("button");
-
-            button.textContent =
-                `${map.name}（難易度 ${map.difficulty}）`;
-
-            button.addEventListener("click", () => {
-
-                this.gameManager.selectMap(map.id);
-            });
-
-            container.appendChild(button);
-        }
+        this.battleMapName.textContent =
+            this.gameManager.currentMap.name;
     }
 
 
     /* =========================
-       ステータスを更新
+       ステータス更新
     ========================= */
 
     updateStatus() {
@@ -178,99 +144,189 @@ export default class UIManager {
 
 
     /* =========================
-       味方ステータスを更新
+       味方ステータス更新
     ========================= */
 
     updatePartyStatus() {
 
-        const container = this.elements.partyStatus;
+        const party = this.gameManager.party;
 
-        if (!container) {
+        if (!party) {
             return;
         }
 
-        container.innerHTML = "";
+        const statusIds = {
 
-        for (const character of this.gameManager.party) {
+            swordsman: {
+                hp: "swordsman-hp",
+                mp: "swordsman-mp"
+            },
 
-            const div = document.createElement("div");
+            mage: {
+                hp: "mage-hp",
+                mp: "mage-mp"
+            },
 
-            div.className = "status-item";
+            priest: {
+                hp: "priest-hp",
+                mp: "priest-mp"
+            },
 
-            div.textContent =
-                `${character.name} HP: ${character.hp}/${character.maxHp} MP: ${character.mp}/${character.maxMp}`;
+            archer: {
+                hp: "archer-hp",
+                mp: "archer-mp"
+            }
+        };
 
-            if (!character.isAlive()) {
-                div.textContent += "（戦闘不能）";
+
+        party.forEach(character => {
+
+            const ids = statusIds[character.id];
+
+            if (!ids) {
+                return;
             }
 
-            container.appendChild(div);
-        }
+            const hpElement =
+                document.getElementById(ids.hp);
+
+            const mpElement =
+                document.getElementById(ids.mp);
+
+            if (hpElement) {
+
+                hpElement.textContent =
+                    character.hp;
+            }
+
+            if (mpElement) {
+
+                mpElement.textContent =
+                    character.mp;
+            }
+
+            // 戦闘不能のキャラクターを表示
+            const statusElement =
+                document.getElementById(
+                    `${character.id}-status`
+                );
+
+            if (statusElement) {
+
+                statusElement.classList.toggle(
+                    "dead",
+                    !character.isAlive()
+                );
+            }
+
+        });
     }
 
 
     /* =========================
-       敵ステータスを更新
+       敵ステータス更新
     ========================= */
 
     updateEnemyStatus() {
 
-        const container = this.elements.enemyStatus;
+        const enemies = this.gameManager.enemies;
 
-        if (!container) {
+        if (!this.enemyStatus || !enemies) {
             return;
         }
 
-        container.innerHTML = "";
+        this.enemyStatus.innerHTML = "";
 
-        for (const enemy of this.gameManager.enemies) {
+        const aliveEnemies = enemies.filter(
+            enemy => enemy.isAlive()
+        );
 
-            const div = document.createElement("div");
+        if (aliveEnemies.length === 0) {
 
-            div.className = "status-item";
+            const message = document.createElement("p");
 
-            div.textContent =
-                `${enemy.name} HP: ${enemy.hp}/${enemy.maxHp}`;
+            message.textContent = "敵はいません。";
 
-            if (!enemy.alive || enemy.hp <= 0) {
-                div.textContent += "（撃破）";
-            }
+            this.enemyStatus.appendChild(message);
 
-            container.appendChild(div);
+            return;
         }
+
+
+        aliveEnemies.forEach(enemy => {
+
+            const enemyElement =
+                document.createElement("div");
+
+            enemyElement.className = "enemy-status-card";
+
+
+            const name = document.createElement("h3");
+
+            name.textContent = enemy.name;
+
+
+            const hp = document.createElement("p");
+
+            hp.textContent =
+                `HP：${enemy.hp} / ${enemy.maxHp}`;
+
+
+            enemyElement.appendChild(name);
+
+            enemyElement.appendChild(hp);
+
+            this.enemyStatus.appendChild(enemyElement);
+
+        });
     }
 
 
     /* =========================
-       戦闘ログを更新
+       戦闘メッセージ更新
+    ========================= */
+
+    updateBattleMessage(message) {
+
+        if (!this.battleMessage) {
+            return;
+        }
+
+        this.battleMessage.textContent = message;
+    }
+
+
+    /* =========================
+       戦闘ログ更新
     ========================= */
 
     updateBattleLog(logs) {
 
-        const container = this.elements.battleLog;
-
-        if (!container) {
+        if (!this.battleLog) {
             return;
         }
 
-        container.innerHTML = "";
+        this.battleLog.innerHTML = "";
 
-        for (const message of logs) {
+        logs.forEach(message => {
 
-            const div = document.createElement("div");
+            const logElement =
+                document.createElement("p");
 
-            div.textContent = message;
+            logElement.textContent = message;
 
-            container.appendChild(div);
-        }
+            this.battleLog.appendChild(logElement);
 
-        // 最新ログが見える位置へ移動
-        container.scrollTop = container.scrollHeight;
+        });
+
+        // 最新のログが見えるようにする
+        this.battleLog.scrollTop =
+            this.battleLog.scrollHeight;
     }
 
 
     /* =========================
-       画面を更新
+       UI全体の更新
     ========================= */
 
     update() {
