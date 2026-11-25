@@ -4,52 +4,47 @@
    ゲーム起動・画面管理
 ========================= */
 
+// ゲーム管理クラス
 import GameManager from "./js/GameManager.js";
 
-// ゲーム管理クラスを生成
-const gameManager = new GameManager();
+
+/* =========================
+   ゲーム管理オブジェクト
+========================= */
+
+let gameManager = null;
 
 
 /* =========================
    画面要素の取得
 ========================= */
 
-const titleScreen = document.getElementById("title-screen");
-const mapScreen = document.getElementById("map-screen");
-const battleScreen = document.getElementById("battle-screen");
+const startButton =
+    document.getElementById("start-button");
 
-const startButton = document.getElementById("start-button");
-const mapBackButton = document.getElementById("map-back-button");
+const mapBackButton =
+    document.getElementById("map-back-button");
 
-const mapCards = document.querySelectorAll(".map-card");
+const mapCards =
+    document.querySelectorAll(".map-card");
 
-const battleMapName = document.getElementById("battle-map-name");
-const battleMessage = document.getElementById("battle-message");
+const attackButton =
+    document.getElementById("attack-button");
 
+const skillButton =
+    document.getElementById("skill-button");
 
-/* =========================
-   マップ情報
-========================= */
+const defendButton =
+    document.getElementById("defend-button");
 
-const maps = {
+const itemButton =
+    document.getElementById("item-button");
 
-    grassland: {
-        name: "緑の平原"
-    },
+const resultMapButton =
+    document.getElementById("result-map-button");
 
-    volcano: {
-        name: "灼熱の火山"
-    },
-
-    snow: {
-        name: "氷結の雪山"
-    },
-
-    castle: {
-        name: "暗黒の古城"
-    }
-
-};
+const resultTitleButton =
+    document.getElementById("result-title-button");
 
 
 /* =========================
@@ -60,77 +55,60 @@ let selectedMap = null;
 
 
 /* =========================
-   画面切り替え
+   ゲーム初期化
 ========================= */
 
-function changeScreen(screenName) {
+function initializeGame() {
 
-    titleScreen.classList.add("hidden");
-    mapScreen.classList.add("hidden");
-    battleScreen.classList.add("hidden");
+    gameManager = new GameManager();
 
-    if (screenName === "title") {
+    gameManager.uiManager.showTitleScreen();
 
-        titleScreen.classList.remove("hidden");
-
-    }
-
-    else if (screenName === "map") {
-
-        mapScreen.classList.remove("hidden");
-
-    }
-
-    else if (screenName === "battle") {
-
-        battleScreen.classList.remove("hidden");
-
-    }
-
+    console.log("CHRONICLES OF FOURIA START");
 }
 
 
 /* =========================
-   ゲームスタート
+   ゲーム開始
 ========================= */
 
-startButton.addEventListener("click", () => {
+function startGame() {
 
-    console.log("GAME START");
+    selectedMap = null;
 
-    changeScreen("map");
+    gameManager.uiManager.showMapScreen();
 
-});
+}
 
 
 /* =========================
    マップ選択
 ========================= */
 
-mapCards.forEach(card => {
+function selectMap(mapId) {
 
-    card.addEventListener("click", () => {
+    selectedMap = mapId;
 
-        // 選択状態をリセット
-        mapCards.forEach(otherCard => {
+    // 選択状態を更新
+    mapCards.forEach(card => {
 
-            otherCard.classList.remove("selected");
+        card.classList.remove("selected");
 
-        });
+        if (card.dataset.map === mapId) {
 
-        // クリックしたマップを選択
-        card.classList.add("selected");
-
-        selectedMap = card.dataset.map;
-
-        console.log("選択したマップ：", maps[selectedMap].name);
-
-        // 決定ボタンを表示
-        showMapDecisionButton();
+            card.classList.add("selected");
+        }
 
     });
 
-});
+    console.log("Selected Map:", mapId);
+
+    // 選択したマップをGameManagerに渡す
+    gameManager.selectMap(mapId);
+
+    // マップ決定ボタンを表示
+    showMapDecisionButton();
+}
 
 
 /* =========================
@@ -139,29 +117,28 @@ mapCards.forEach(card => {
 
 function showMapDecisionButton() {
 
-    let decisionButton = document.getElementById("map-decision-button");
+    let decisionButton =
+        document.getElementById("map-decision-button");
 
-    if (decisionButton) {
-        return;
+    if (!decisionButton) {
+
+        decisionButton =
+            document.createElement("button");
+
+        decisionButton.id = "map-decision-button";
+
+        decisionButton.textContent = "このマップで冒険する";
+
+        document.getElementById("map-screen")
+            .appendChild(decisionButton);
+
+        decisionButton.addEventListener(
+            "click",
+            startBattle
+        );
     }
 
-    decisionButton = document.createElement("button");
-
-    decisionButton.id = "map-decision-button";
-    decisionButton.textContent = "このエリアに進む";
-
-    decisionButton.style.marginTop = "15px";
-    decisionButton.style.padding = "14px 35px";
-    decisionButton.style.border = "2px solid #e8c879";
-    decisionButton.style.borderRadius = "6px";
-    decisionButton.style.background = "#80602c";
-    decisionButton.style.color = "#fff2cc";
-    decisionButton.style.fontSize = "18px";
-
-    mapScreen.appendChild(decisionButton);
-
-    decisionButton.addEventListener("click", startBattle);
-
+    decisionButton.style.display = "block";
 }
 
 
@@ -172,38 +149,177 @@ function showMapDecisionButton() {
 function startBattle() {
 
     if (!selectedMap) {
+
+        alert("マップを選択してください。");
+
         return;
     }
 
-    const mapData = maps[selectedMap];
+    // GameManager側で戦闘を開始
+    const success = gameManager.startBattle();
 
-    console.log(mapData.name + "の冒険を開始します！");
+    if (!success) {
 
-    battleMapName.textContent = mapData.name;
+        alert("戦闘を開始できませんでした。");
 
-    battleMessage.textContent =
-        mapData.name + "の冒険が始まった！";
+        return;
+    }
 
-    changeScreen("battle");
+    // 戦闘画面の表示
+    gameManager.uiManager.showBattleScreen();
 
+    // マップ名の表示
+    gameManager.uiManager.updateMapName();
+
+    // 戦闘メッセージ
+    gameManager.uiManager.updateBattleMessage(
+        "敵が現れた！戦闘開始！"
+    );
+
+    // 戦闘ログ
+    gameManager.uiManager.updateStatus();
+
+    console.log("Battle Started!");
 }
 
 
 /* =========================
-   マップ画面へ戻る
+   マップ選択へ戻る
 ========================= */
 
-mapBackButton.addEventListener("click", () => {
+function returnToMap() {
 
-    changeScreen("title");
+    selectedMap = null;
+
+    mapCards.forEach(card => {
+
+        card.classList.remove("selected");
+
+    });
+
+    const decisionButton =
+        document.getElementById("map-decision-button");
+
+    if (decisionButton) {
+
+        decisionButton.style.display = "none";
+    }
+
+    gameManager.uiManager.showMapScreen();
+}
+
+
+/* =========================
+   タイトルへ戻る
+========================= */
+
+function returnToTitle() {
+
+    selectedMap = null;
+
+    mapCards.forEach(card => {
+
+        card.classList.remove("selected");
+
+    });
+
+    const decisionButton =
+        document.getElementById("map-decision-button");
+
+    if (decisionButton) {
+
+        decisionButton.style.display = "none";
+    }
+
+    initializeGame();
+}
+
+
+/* =========================
+   ボタンイベント設定
+========================= */
+
+// ゲーム開始
+startButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+// マップ選択
+mapCards.forEach(card => {
+
+    card.addEventListener("click", () => {
+
+        selectMap(card.dataset.map);
+
+    });
+
+});
+
+
+// マップ選択画面から戻る
+mapBackButton.addEventListener(
+    "click",
+    () => {
+
+        gameManager.uiManager.showTitleScreen();
+
+    }
+);
+
+
+// 結果画面からマップ選択へ
+resultMapButton.addEventListener(
+    "click",
+    returnToMap
+);
+
+
+// 結果画面からタイトルへ
+resultTitleButton.addEventListener(
+    "click",
+    returnToTitle
+);
+
+
+/* =========================
+   戦闘コマンド
+========================= */
+
+// 現在は次の手順で実装予定
+// GameManagerとBattleSystemの修正後に接続する
+
+attackButton.addEventListener("click", () => {
+
+    console.log("Attack command selected");
+
+});
+
+
+skillButton.addEventListener("click", () => {
+
+    console.log("Skill command selected");
+
+});
+
+
+defendButton.addEventListener("click", () => {
+
+    console.log("Defend command selected");
+
+});
+
+
+itemButton.addEventListener("click", () => {
+
+    console.log("Item command selected");
 
 });
 
 
 /* =========================
-   初期画面
+   起動
 ========================= */
 
-changeScreen("title");
-
-console.log("CHRONICLES OF FOURIA 起動完了！");
+initializeGame();
