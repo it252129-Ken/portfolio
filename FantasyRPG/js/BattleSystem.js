@@ -8,7 +8,6 @@ export default class BattleSystem {
 
     constructor(gameManager) {
 
-        // ゲーム管理クラス
         this.gameManager = gameManager;
 
         // 戦闘ログ
@@ -16,6 +15,8 @@ export default class BattleSystem {
 
         // 戦闘中かどうか
         this.isActive = false;
+
+        console.log("BattleSystem initialized");
     }
 
 
@@ -26,30 +27,40 @@ export default class BattleSystem {
     startBattle() {
 
         if (!this.gameManager.currentMap) {
+
+            console.warn("マップが選択されていません。");
+
             return false;
         }
 
-        // 敵を初期化
+        // 敵を生成
         this.gameManager.initializeEnemies();
 
         if (this.gameManager.enemies.length === 0) {
+
+            console.warn("敵が生成されませんでした。");
+
             return false;
         }
 
-        // 戦闘状態を初期化
+        // 戦闘ログを初期化
         this.battleLog = [];
+
         this.isActive = true;
 
-        console.log("戦闘開始！");
-
+        // 戦闘開始ログ
         this.addLog("戦闘開始！");
+
+        this.addLog(
+            `${this.gameManager.currentMap.name}に敵が現れた！`
+        );
 
         return true;
     }
 
 
     /* =========================
-       味方の通常攻撃
+       通常攻撃
     ========================= */
 
     playerAttack(attacker, target) {
@@ -72,65 +83,80 @@ export default class BattleSystem {
             attacker.attack - target.defense
         );
 
-        // 敵にダメージ
         target.takeDamage(damage);
 
-        const message =
-            `${attacker.name} の攻撃！ ${target.name} に ${damage} のダメージ！`;
+        this.addLog(
+            `${attacker.name}の攻撃！ ${target.name}に${damage}ダメージ！`
+        );
 
-        console.log(message);
-        this.addLog(message);
+        if (!target.isAlive()) {
 
-        // 戦闘結果を確認
+            this.addLog(
+                `${target.name}を倒した！`
+            );
+
+        }
+
+        // 勝敗判定
         this.checkBattleResult();
+
+        // 画面更新
+        this.updateUI();
 
         return damage;
     }
 
 
-/* =========================
-   敵の通常攻撃
-========================= */
+    /* =========================
+       敵の攻撃
+    ========================= */
 
-enemyAttack(attacker, target) {
+    enemyAttack(attacker, target) {
 
-    if (!this.isActive) {
-        return false;
+        if (!this.isActive) {
+            return false;
+        }
+
+        if (!attacker || !attacker.isAlive()) {
+            return false;
+        }
+
+        if (!target || !target.isAlive()) {
+            return false;
+        }
+
+        // ダメージ計算
+        const damage = Math.max(
+            1,
+            attacker.attack - target.defense
+        );
+
+        target.takeDamage(damage);
+
+        this.addLog(
+            `${attacker.name}の攻撃！ ${target.name}は${damage}ダメージを受けた！`
+        );
+
+        if (!target.isAlive()) {
+
+            this.addLog(
+                `${target.name}は戦闘不能になった！`
+            );
+
+        }
+
+        // 勝敗判定
+        this.checkBattleResult();
+
+        // 画面更新
+        this.updateUI();
+
+        return damage;
     }
-
-    if (!attacker || !attacker.isAlive()) {
-        return false;
-    }
-
-    if (!target || !target.isAlive()) {
-        return false;
-    }
-
-    // ダメージ計算
-    const damage = Math.max(
-        1,
-        attacker.attack - target.defense
-    );
-
-    // 味方にダメージ
-    target.takeDamage(damage);
-
-    // 攻撃メッセージ
-    const message =
-        `${attacker.name} の攻撃！ ${target.name} に ${damage} のダメージ！`;
-
-    console.log(message);
-    this.addLog(message);
-
-    // 戦闘結果を確認
-    this.checkBattleResult();
-
-    return damage;
-}
 
 
     /* =========================
-       味方の回復
+       回復
     ========================= */
 
     healCharacter(healer, target, amount, mpCost = 10) {
@@ -147,31 +173,37 @@ enemyAttack(attacker, target) {
             return false;
         }
 
-        // MP消費
-        if (!healer.useMp(mpCost)) {
-            this.addLog(`${healer.name} はMPが足りない！`);
+        if (healer.mp < mpCost) {
+
+            this.addLog("MPが足りません！");
+
             return false;
         }
 
-        // HP回復
+        // MP消費
+        if (!healer.useMp(mpCost)) {
+            return false;
+        }
+
+        // 回復量
         const beforeHp = target.hp;
 
         target.heal(amount);
 
         const recovered = target.hp - beforeHp;
 
-        const message =
-            `${healer.name} の回復！ ${target.name} のHPが ${recovered} 回復！`;
+        this.addLog(
+            `${healer.name}は${target.name}を${recovered}回復した！`
+        );
 
-        console.log(message);
-        this.addLog(message);
+        this.updateUI();
 
         return recovered;
     }
 
 
     /* =========================
-       味方の防御
+       防御
     ========================= */
 
     defendCharacter(character) {
@@ -186,17 +218,18 @@ enemyAttack(attacker, target) {
 
         character.defend();
 
-        const message = `${character.name} は身を守っている！`;
+        this.addLog(
+            `${character.name}は身を守っている！`
+        );
 
-        console.log(message);
-        this.addLog(message);
+        this.updateUI();
 
         return true;
     }
 
 
     /* =========================
-       敵の行動
+       敵ターン
     ========================= */
 
     executeEnemyTurn() {
@@ -205,74 +238,119 @@ enemyAttack(attacker, target) {
             return false;
         }
 
-        const aliveEnemies = this.gameManager.enemies.filter(
-            enemy => enemy.alive && enemy.hp > 0
-        );
+        this.addLog("敵のターン！");
 
-        const aliveParty = this.gameManager.party.filter(
-            character => character.isAlive()
-        );
 
-        if (aliveEnemies.length === 0 || aliveParty.length === 0) {
-            this.checkBattleResult();
-            return false;
-        }
+        const enemies =
+            this.gameManager.enemies.filter(
+                enemy => enemy.isAlive()
+            );
 
-        // 生存している敵が順番に攻撃
-        for (const enemy of aliveEnemies) {
-
-            const targets = this.gameManager.party.filter(
+        const party =
+            this.gameManager.party.filter(
                 character => character.isAlive()
             );
 
-            if (targets.length === 0) {
-                break;
-            }
 
-            // 現時点では先頭の生存メンバーを狙う
-            const target = targets[0];
+        // 敵がいない場合
+        if (enemies.length === 0) {
 
-            this.enemyAttack(enemy, target);
+            this.checkBattleResult();
+
+            return false;
+        }
+
+
+        // 味方がいない場合
+        if (party.length === 0) {
+
+            this.checkBattleResult();
+
+            return false;
+        }
+
+
+        // 生存している敵が順番に攻撃
+        for (const enemy of enemies) {
 
             if (!this.isActive) {
                 break;
             }
+
+            const aliveParty =
+                this.gameManager.party.filter(
+                    character => character.isAlive()
+                );
+
+            if (aliveParty.length === 0) {
+                break;
+            }
+
+            // 生存している味方から対象を選ぶ
+            const target =
+                aliveParty[
+                    Math.floor(Math.random() * aliveParty.length)
+                ];
+
+            this.enemyAttack(enemy, target);
+
         }
 
+
         // 防御状態を解除
-        for (const character of this.gameManager.party) {
+        this.gameManager.party.forEach(character => {
+
             character.resetDefending();
-        }
+
+        });
+
+
+        // UI更新
+        this.updateUI();
 
         return true;
     }
 
 
     /* =========================
-       戦闘結果を確認
+       勝敗判定
     ========================= */
 
     checkBattleResult() {
 
-        const aliveParty = this.gameManager.party.some(
-            character => character.isAlive()
-        );
+        if (!this.isActive) {
+            return false;
+        }
 
-        const aliveEnemies = this.gameManager.enemies.some(
-            enemy => enemy.alive && enemy.hp > 0
-        );
+        const partyAlive =
+            this.gameManager.party.some(
+                character => character.isAlive()
+            );
 
-        if (!aliveParty) {
+        const enemiesAlive =
+            this.gameManager.enemies.some(
+                enemy => enemy.isAlive()
+            );
+
+
+        // 味方が全滅
+        if (!partyAlive) {
+
             this.finishBattle("defeat");
+
             return "defeat";
         }
 
-        if (!aliveEnemies) {
+
+        // 敵を全滅
+        if (!enemiesAlive) {
+
             this.finishBattle("victory");
+
             return "victory";
         }
 
-        return "continue";
+        return false;
     }
 
 
@@ -282,60 +360,78 @@ enemyAttack(attacker, target) {
 
     finishBattle(result) {
 
-        this.isActive = false;
-
-        this.gameManager.finishBattle(result);
-
-        if (result === "victory") {
-            this.addLog("勝利！敵をすべて倒した！");
-        } else {
-            this.addLog("敗北……パーティーは全滅した。");
+        if (!this.isActive) {
+            return;
         }
 
-        return result;
+        this.isActive = false;
+
+        if (result === "victory") {
+
+            this.addLog("敵をすべて倒した！勝利！");
+
+        } else {
+
+            this.addLog("パーティーは全滅した……");
+
+        }
+
+        this.gameManager.finishBattle(result);
     }
 
 
     /* =========================
-   戦闘ログを追加
-========================= */
+       戦闘ログ追加
+    ========================= */
 
-addLog(message) {
+    addLog(message) {
 
-    this.battleLog.push(message);
+        this.battleLog.push(message);
 
-    // ログは最新20件まで保持
-    if (this.battleLog.length > 20) {
-        this.battleLog.shift();
+        // ログは最大30件
+        if (this.battleLog.length > 30) {
+
+            this.battleLog.shift();
+
+        }
+
+        this.updateBattleLog();
     }
 
-    // 画面を更新
-    this.updateUI();
-}
 
+    /* =========================
+       戦闘ログ更新
+    ========================= */
 
-/* =========================
-   戦闘画面を更新
-========================= */
+    updateBattleLog() {
 
-updateUI() {
+        if (!this.gameManager.uiManager) {
+            return;
+        }
 
-    // UIManagerが存在する場合
-    if (this.gameManager.uiManager) {
-
-        // ステータスを更新
-        this.gameManager.uiManager.updateStatus();
-
-        // 戦闘ログを更新
         this.gameManager.uiManager.updateBattleLog(
             this.battleLog
         );
     }
-}
 
 
     /* =========================
-       戦闘ログを取得
+       UI更新
+    ========================= */
+
+    updateUI() {
+
+        if (!this.gameManager.uiManager) {
+            return;
+        }
+
+        this.gameManager.uiManager.updateStatus();
+
+    }
+
+
+    /* =========================
+       ログ取得
     ========================= */
 
     getBattleLog() {
