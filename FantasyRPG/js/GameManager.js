@@ -4,66 +4,79 @@
    ゲーム管理クラス
 ========================= */
 
+// キャラクター管理
+import Character from "./Character.js";
+
+// 敵キャラクター管理
+import Enemy from "./Enemy.js";
+
+// プレイヤー管理
+import Player from "./Player.js";
+
+// 戦闘管理
+import BattleSystem from "./BattleSystem.js";
+
+// スキル管理
+import SkillSystem from "./SkillSystem.js";
+
+// マップ管理
+import MapManager from "./MapManager.js";
+
+// 画面管理
+import UIManager from "./UIManager.js";
+
+
 export default class GameManager {
 
-    constructor() {
+constructor() {
 
-        // ゲームの状態
-        this.gameState = "title";
+    // ゲームの状態
+    this.gameState = "title";
 
-        // 現在のマップ
-        this.currentMap = null;
+    // 現在のマップ
+    this.currentMap = null;
 
-      // マップ情報
-this.maps = {
-    grassland: {
-        id: "grassland",
-        name: "緑の平原",
-        difficulty: 1
-    },
+    // プレイヤー管理
+    this.player = new Player();
 
-    volcano: {
-        id: "volcano",
-        name: "灼熱の火山",
-        difficulty: 2
-    },
+    // パーティー初期化
+    this.initializeParty();
 
-    snow: {
-        id: "snow",
-        name: "氷結の雪山",
-        difficulty: 3
-    },
+    // パーティーの参照
+    this.party = this.player.party;
 
-    castle: {
-        id: "castle",
-        name: "暗黒の古城",
-        difficulty: 4
-    }
-};
+    // 敵キャラクター
+    this.enemies = [];
+
+    // ターン管理
+    this.turnCount = 1;
+    this.currentCharacterIndex = 0;
+
+    // 戦闘状態
+    this.isBattleActive = false;
+    this.battleResult = null;
+
+    // マップ管理
+    this.mapManager = new MapManager(this);
+
+   // マップ情報を共有
+　　this.maps = this.mapManager.maps;
+
+    // 戦闘管理
+    this.battleSystem = new BattleSystem(this);
+
+    // スキル管理
+    this.skillSystem = new SkillSystem(this.battleSystem);
+
+    // 画面管理
+    this.uiManager = new UIManager(this);
+
+    console.log("GameManager initialized");
+}
+
+   
 
 
-        // プレイヤーのパーティー
-        this.party = [];
-
-      // パーティーの初期化
-　　　 this.initializeParty();
-
-        // 敵キャラクター
-        this.enemies = [];
-
-        // 現在のターン数
-        this.turnCount = 1;
-
-        // 現在行動を選択しているキャラクター
-        this.currentCharacterIndex = 0;
-
-        // 戦闘中かどうか
-        this.isBattleActive = false;
-　　　// 戦闘結果
-      this.battleResult = null;
-
-        console.log("GameManager initialized");
-    }
 
 
 /* =========================
@@ -72,83 +85,70 @@ this.maps = {
 
 initializeParty() {
 
-    this.party = [
+    // 剣士
+    const swordsman = new Character({
+        id: "swordsman",
+        name: "剣士",
+        maxHp: 150,
+        maxMp: 30,
+        attack: 25,
+        defense: 15
+    });
 
-        {
-            id: "swordsman",
-            name: "剣士",
-            maxHp: 150,
-            hp: 150,
-            maxMp: 30,
-            mp: 30,
-            attack: 25,
-            defense: 15,
-            alive: true
-        },
+    // 魔法使い
+    const mage = new Character({
+        id: "mage",
+        name: "魔法使い",
+        maxHp: 90,
+        maxMp: 80,
+        attack: 35,
+        defense: 8
+    });
 
-        {
-            id: "mage",
-            name: "魔法使い",
-            maxHp: 90,
-            hp: 90,
-            maxMp: 80,
-            mp: 80,
-            attack: 35,
-            defense: 8,
-            alive: true
-        },
+    // 僧侶
+    const priest = new Character({
+        id: "priest",
+        name: "僧侶",
+        maxHp: 110,
+        maxMp: 70,
+        attack: 15,
+        defense: 12
+    });
 
-        {
-            id: "priest",
-            name: "僧侶",
-            maxHp: 110,
-            hp: 110,
-            maxMp: 70,
-            mp: 70,
-            attack: 15,
-            defense: 12,
-            alive: true
-        },
+    // 弓使い
+    const archer = new Character({
+        id: "archer",
+        name: "弓使い",
+        maxHp: 100,
+        maxMp: 40,
+        attack: 30,
+        defense: 10
+    });
 
-        {
-            id: "archer",
-            name: "弓使い",
-            maxHp: 100,
-            hp: 100,
-            maxMp: 40,
-            mp: 40,
-            attack: 30,
-            defense: 10,
-            alive: true
-        }
+    // パーティーに登録
+    this.player.addMember(swordsman);
+    this.player.addMember(mage);
+    this.player.addMember(priest);
+    this.player.addMember(archer);
 
-    ];
+    // パーティーを参照
+    this.party = this.player.party;
 
     console.log("Party initialized:", this.party);
 }
 
 
-  /* =========================
+
+
+
+/* =========================
    マップ選択
 ========================= */
 
 selectMap(mapId) {
 
-    // 指定されたマップが存在するか確認
-    if (!this.maps[mapId]) {
-        console.error("存在しないマップです:", mapId);
-        return false;
-    }
-
-    // 選択したマップを保存
-    this.currentMap = this.maps[mapId];
-
-    // ゲーム状態を更新
-    this.gameState = "map";
-
-    console.log("Map selected:", this.currentMap.name);
-
-    return true;
+    // マップ管理クラスに処理を委任
+    return this.mapManager.selectMap(mapId);
 }
 
 
@@ -191,6 +191,9 @@ if (this.enemies.length === 0) {
 }
 
   
+
+
+
 /* =========================
    敵キャラクター生成
 ========================= */
@@ -214,7 +217,6 @@ initializeEnemies() {
                 id: "slime",
                 name: "グリーンスライム",
                 maxHp: 60,
-                hp: 60,
                 attack: 12,
                 defense: 5
             },
@@ -222,7 +224,6 @@ initializeEnemies() {
                 id: "wolf",
                 name: "フォレストウルフ",
                 maxHp: 90,
-                hp: 90,
                 attack: 18,
                 defense: 8
             }
@@ -233,7 +234,6 @@ initializeEnemies() {
                 id: "fire_lizard",
                 name: "ファイアリザード",
                 maxHp: 120,
-                hp: 120,
                 attack: 25,
                 defense: 12
             },
@@ -241,7 +241,6 @@ initializeEnemies() {
                 id: "lava_golem",
                 name: "マグマゴーレム",
                 maxHp: 180,
-                hp: 180,
                 attack: 30,
                 defense: 20
             }
@@ -252,7 +251,6 @@ initializeEnemies() {
                 id: "ice_wolf",
                 name: "アイスウルフ",
                 maxHp: 150,
-                hp: 150,
                 attack: 28,
                 defense: 15
             },
@@ -260,7 +258,6 @@ initializeEnemies() {
                 id: "frost_golem",
                 name: "フロストゴーレム",
                 maxHp: 220,
-                hp: 220,
                 attack: 35,
                 defense: 25
             }
@@ -271,7 +268,6 @@ initializeEnemies() {
                 id: "dark_knight",
                 name: "ダークナイト",
                 maxHp: 250,
-                hp: 250,
                 attack: 40,
                 defense: 30
             },
@@ -279,7 +275,6 @@ initializeEnemies() {
                 id: "demon",
                 name: "デーモン",
                 maxHp: 300,
-                hp: 300,
                 attack: 45,
                 defense: 25
             }
@@ -294,14 +289,27 @@ initializeEnemies() {
         return;
     }
 
-    // 敵を登録
-    this.enemies = selectedEnemies.map(enemy => ({
-        ...enemy,
-        alive: true
-    }));
+    // Enemyクラスから敵を生成
+    this.enemies = selectedEnemies.map(enemyData => {
+
+        return new Enemy({
+            id: enemyData.id,
+            name: enemyData.name,
+            maxHp: enemyData.maxHp,
+            attack: enemyData.attack,
+            defense: enemyData.defense
+        });
+    });
 
     console.log("Enemies initialized:", this.enemies);
 }
+
+
+
+
+
+
+   
 
 
 
