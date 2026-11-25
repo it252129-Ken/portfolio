@@ -44,6 +44,14 @@ export default class Character {
 
     takeDamage(damage) {
 
+        // 戦闘不能ならダメージを受けない
+        if (!this.isAlive()) {
+            return 0;
+        }
+
+        // ダメージを0以上の整数にする
+        damage = Math.max(0, Math.floor(damage));
+
         // 防御中ならダメージを半減
         if (this.isDefending) {
             damage = Math.floor(damage / 2);
@@ -53,13 +61,12 @@ export default class Character {
         this.hp -= damage;
 
         // HPが0未満にならないようにする
-        if (this.hp < 0) {
-            this.hp = 0;
-        }
+        this.hp = Math.max(0, this.hp);
 
         // 戦闘不能判定
         if (this.hp <= 0) {
             this.alive = false;
+            this.isDefending = false;
         }
 
         return damage;
@@ -72,12 +79,18 @@ export default class Character {
 
     heal(amount) {
 
-        // HPを回復
+        // 回復量を0以上の整数にする
+        amount = Math.max(0, Math.floor(amount));
+
+        // 戦闘不能でも回復可能
         this.hp += amount;
 
         // 最大HPを超えないようにする
-        if (this.hp > this.maxHp) {
-            this.hp = this.maxHp;
+        this.hp = Math.min(this.hp, this.maxHp);
+
+        // HPが1以上なら復活
+        if (this.hp > 0) {
+            this.alive = true;
         }
 
         return this.hp;
@@ -89,6 +102,8 @@ export default class Character {
     ========================= */
 
     useMp(amount) {
+
+        amount = Math.max(0, Math.floor(amount));
 
         // MPが足りない場合
         if (this.mp < amount) {
@@ -108,13 +123,13 @@ export default class Character {
 
     recoverMp(amount) {
 
+        amount = Math.max(0, Math.floor(amount));
+
         // MPを回復
         this.mp += amount;
 
         // 最大MPを超えないようにする
-        if (this.mp > this.maxMp) {
-            this.mp = this.maxMp;
-        }
+        this.mp = Math.min(this.mp, this.maxMp);
 
         return this.mp;
     }
@@ -136,7 +151,9 @@ export default class Character {
 
     defend() {
 
-        this.isDefending = true;
+        if (this.isAlive()) {
+            this.isDefending = true;
+        }
     }
 
 
@@ -149,5 +166,18 @@ export default class Character {
         this.isDefending = false;
     }
 
-}
 
+    /* =========================
+       HP・MPを全回復
+    ========================= */
+
+    restore() {
+
+        this.hp = this.maxHp;
+        this.mp = this.maxMp;
+
+        this.alive = true;
+        this.isDefending = false;
+    }
+
+}
