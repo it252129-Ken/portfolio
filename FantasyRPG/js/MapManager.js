@@ -11,6 +11,9 @@ export default class MapManager {
         // ゲーム管理クラス
         this.gameManager = gameManager;
 
+        // 現在選択されているマップ
+        this.currentMap = null;
+
         // マップ情報
         this.maps = {
 
@@ -78,19 +81,37 @@ export default class MapManager {
         const map = this.getMap(mapId);
 
         if (!map) {
-            console.error("指定されたマップが見つかりません。");
+
+            console.error(
+                "指定されたマップが見つかりません。",
+                mapId
+            );
+
             return false;
         }
 
-        // GameManagerに選択したマップを設定
+        // 選択中のマップを設定
+        this.currentMap = map;
+
+        // GameManagerにも設定
         this.gameManager.currentMap = map;
 
-        // ゲーム状態を変更
+        // ゲーム状態を更新
         this.gameManager.gameState = "map";
 
         console.log(`${map.name} を選択しました！`);
 
         return true;
+    }
+
+
+    /* =========================
+       現在のマップを取得
+    ========================= */
+
+    getCurrentMap() {
+
+        return this.currentMap;
     }
 
 
@@ -114,7 +135,25 @@ export default class MapManager {
             return null;
         }
 
-        return this.maps[mapList[nextIndex]];
+        return this.getMap(mapList[nextIndex]);
+    }
+
+
+    /* =========================
+       前のマップを取得
+    ========================= */
+
+    getPreviousMap(mapId) {
+
+        const mapList = Object.keys(this.maps);
+
+        const currentIndex = mapList.indexOf(mapId);
+
+        if (currentIndex <= 0) {
+            return null;
+        }
+
+        return this.getMap(mapList[currentIndex - 1]);
     }
 
 
@@ -133,5 +172,32 @@ export default class MapManager {
         return map.difficulty;
     }
 
-}
 
+    /* =========================
+       マップの背景画像を取得
+    ========================= */
+
+    getBackground(mapId) {
+
+        const map = this.getMap(mapId);
+
+        if (!map) {
+            return null;
+        }
+
+        return map.background;
+    }
+
+
+    /* =========================
+       マップの選択を解除
+    ========================= */
+
+    clearCurrentMap() {
+
+        this.currentMap = null;
+
+        this.gameManager.currentMap = null;
+    }
+
+}
