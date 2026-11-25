@@ -44,24 +44,17 @@ export default class GameManager {
 
         this.initializeParty();
 
-
         // 敵キャラクター
         this.enemies = [];
 
-
         // ターン管理
         this.turnCount = 1;
-
         this.currentCharacterIndex = 0;
-
         this.currentTurn = "player";
-
 
         // 戦闘状態
         this.isBattleActive = false;
-
         this.battleResult = null;
-
 
         // 各管理クラス
         this.mapManager = new MapManager(this);
@@ -73,7 +66,6 @@ export default class GameManager {
         this.skillSystem = new SkillSystem(this.battleSystem);
 
         this.uiManager = new UIManager(this);
-
 
         console.log("GameManager initialized");
     }
@@ -127,13 +119,11 @@ export default class GameManager {
 
         ];
 
-
         characters.forEach(character => {
 
             this.player.addMember(character);
 
         });
-
 
         this.party = this.player.party;
     }
@@ -145,21 +135,29 @@ export default class GameManager {
 
     selectMap(mapId) {
 
-        const selected =
-            this.mapManager.selectMap(mapId);
+        // MapManagerでマップを選択
+        const success = this.mapManager.selectMap(mapId);
 
-        if (!selected) {
+        if (!success) {
 
             console.warn("マップが見つかりません:", mapId);
 
             return false;
         }
 
-        this.currentMap = selected;
+        // 選択されたマップ情報を取得
+        this.currentMap = this.mapManager.getCurrentMap();
+
+        if (!this.currentMap) {
+
+            console.error("選択されたマップ情報を取得できません。");
+
+            return false;
+        }
 
         this.gameState = "map";
 
-        console.log("Selected Map:", selected.name);
+        console.log("Selected Map:", this.currentMap.name);
 
         return true;
     }
@@ -186,7 +184,6 @@ export default class GameManager {
             return false;
         }
 
-
         // ターン情報を初期化
         this.turnCount = 1;
 
@@ -194,29 +191,23 @@ export default class GameManager {
 
         this.currentTurn = "player";
 
-
         // 戦闘結果をリセット
         this.battleResult = null;
 
-
         // 戦闘開始
-        const success =
-            this.battleSystem.startBattle();
+        const success = this.battleSystem.startBattle();
 
         if (!success) {
 
             return false;
         }
 
-
         this.isBattleActive = true;
 
         this.gameState = "battle";
 
-
         // UI更新
         this.uiManager.updateStatus();
-
 
         console.log("Battle Started:", this.currentMap.name);
 
@@ -232,6 +223,13 @@ export default class GameManager {
 
         this.enemies = [];
 
+        // マップが選択されているか確認
+        if (!this.currentMap) {
+
+            console.error("マップが選択されていません。");
+
+            return;
+        }
 
         // マップごとの敵情報
         const enemyData = {
@@ -258,7 +256,6 @@ export default class GameManager {
 
             ],
 
-
             volcano: [
 
                 {
@@ -281,7 +278,6 @@ export default class GameManager {
 
             ],
 
-
             snow: [
 
                 {
@@ -303,7 +299,6 @@ export default class GameManager {
                 }
 
             ],
-
 
             castle: [
 
@@ -329,35 +324,43 @@ export default class GameManager {
 
         };
 
-
+        // 現在のマップに対応する敵データ
         const data = enemyData[this.currentMap.id];
 
         if (!data) {
 
-            console.error("敵データがありません。");
+            console.error(
+                "敵データがありません:",
+                this.currentMap.id
+            );
 
             return;
         }
-
 
         // 敵を生成
         data.forEach(enemy => {
 
             this.enemies.push(
 
-                new Enemy(
-                    enemy.id,
-                    enemy.name,
-                    enemy.hp,
-                    enemy.attack,
-                    enemy.defense,
-                    enemy.exp
-                )
+                new Enemy({
+
+                    id: enemy.id,
+
+                    name: enemy.name,
+
+                    maxHp: enemy.hp,
+
+                    attack: enemy.attack,
+
+                    defense: enemy.defense,
+
+                    exp: enemy.exp
+
+                })
 
             );
 
         });
-
 
         console.log("Enemies Initialized:", this.enemies);
     }
@@ -380,7 +383,6 @@ export default class GameManager {
 
             return null;
         }
-
 
         // 現在位置から生存キャラクターを探す
         for (let i = 0; i < party.length; i++) {
@@ -421,7 +423,6 @@ export default class GameManager {
             return false;
         }
 
-
         // 次の生存キャラクターを探す
         for (let i = 1; i <= party.length; i++) {
 
@@ -458,10 +459,8 @@ export default class GameManager {
 
         console.log("Enemy Turn");
 
-
         // 敵の行動
         this.battleSystem.executeEnemyTurn();
-
 
         // 戦闘が終了していなければ次のターンへ
         if (this.isBattleActive) {
@@ -490,11 +489,9 @@ export default class GameManager {
 
         this.gameState = "battle";
 
-
         this.battleSystem.addLog(
             `ターン ${this.turnCount} 開始！`
         );
-
 
         this.uiManager.updateStatus();
 
@@ -531,7 +528,6 @@ export default class GameManager {
 
         this.gameState = "result";
 
-
         if (result === "victory") {
 
             console.log("VICTORY!");
@@ -541,7 +537,6 @@ export default class GameManager {
             console.log("GAME OVER");
 
         }
-
 
         // 結果画面を表示
         this.uiManager.showResultScreen(result);
@@ -554,6 +549,7 @@ export default class GameManager {
 
     resetGame() {
 
+        // ゲーム状態を初期化
         this.gameState = "title";
 
         this.currentMap = null;
@@ -570,7 +566,10 @@ export default class GameManager {
 
         this.battleResult = null;
 
-        // 味方のHP・MPも初期状態に戻す
+        // マップ選択状態を解除
+        this.mapManager.clearCurrentMap();
+
+        // プレイヤーを初期状態に戻す
         this.player = new Player();
 
         this.initializeParty();
@@ -579,6 +578,8 @@ export default class GameManager {
         this.battleSystem.isActive = false;
 
         this.battleSystem.battleLog = [];
+
+        this.battleSystem.rewardedEnemyIds = new Set();
 
         console.log("Game Reset");
     }
