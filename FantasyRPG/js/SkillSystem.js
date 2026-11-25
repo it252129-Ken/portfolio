@@ -129,7 +129,7 @@ export default class SkillSystem {
             return false;
         }
 
-        // 対象を取得
+        // スキル対象を取得
         let targets = [];
 
         if (skill.type === "attack") {
@@ -157,9 +157,8 @@ export default class SkillSystem {
 
                 targets = [target];
             }
-        }
 
-        else if (skill.type === "heal") {
+        } else if (skill.type === "heal") {
 
             if (skill.target === "all") {
 
@@ -184,9 +183,9 @@ export default class SkillSystem {
 
                 targets = [target];
             }
-        }
 
-        else {
+        } else {
+
             return false;
         }
 
@@ -261,8 +260,22 @@ export default class SkillSystem {
 
     executeAttackSkill(user, skill, targets) {
 
+        if (!this.battleSystem.isActive) {
+            return false;
+        }
+
         // 各対象にダメージ
         for (const enemy of targets) {
+
+            // 戦闘終了後は処理しない
+            if (!this.battleSystem.isActive) {
+                break;
+            }
+
+            // すでに倒されている敵は無視
+            if (!enemy.isAlive()) {
+                continue;
+            }
 
             const damage = Math.max(
                 1,
@@ -301,8 +314,21 @@ export default class SkillSystem {
 
     executeHealSkill(user, skill, targets) {
 
+        if (!this.battleSystem.isActive) {
+            return false;
+        }
+
         // 各対象を回復
         for (const character of targets) {
+
+            // 戦闘終了後は処理しない
+            if (!this.battleSystem.isActive) {
+                break;
+            }
+
+            if (!character.isAlive()) {
+                continue;
+            }
 
             const beforeHp = character.hp;
 
@@ -350,12 +376,29 @@ export default class SkillSystem {
             return [];
         }
 
+        // 味方以外は使用できない
+        if (!this.gameManager.party.includes(user)) {
+            return [];
+        }
+
+        // 戦闘中でなければ使用できない
+        if (!this.battleSystem.isActive) {
+            return [];
+        }
+
         return this.getSkills().filter(skill => {
 
+            // MPが足りないスキルは除外
+            if (user.mp < skill.mpCost) {
+                return false;
+            }
+
+            // 攻撃魔法は魔法使い専用
             if (skill.type === "attack") {
                 return user.id === "mage";
             }
 
+            // 回復魔法は僧侶専用
             if (skill.type === "heal") {
                 return user.id === "priest";
             }
