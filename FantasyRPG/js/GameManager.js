@@ -46,7 +46,7 @@ this.maps = {
         this.party = [];
 
       // パーティーの初期化
-　　　this.initializeParty();
+　　　 this.initializeParty();
 
         // 敵キャラクター
         this.enemies = [];
@@ -166,6 +166,12 @@ startBattle() {
 
    // 敵キャラクターを生成
 this.initializeEnemies();
+   
+   // 敵が生成されなかった場合
+if (this.enemies.length === 0) {
+    console.error("敵キャラクターを生成できませんでした。");
+    return false;
+}
 
     // ターン数を初期化
     this.turnCount = 1;
@@ -298,26 +304,33 @@ initializeEnemies() {
 }
 
 
+
 /* =========================
    次の行動キャラクターを取得
 ========================= */
 
 getCurrentCharacter() {
 
-    // 生存している味方を取得
-    const aliveParty = this.party.filter(
-        character => character.alive && character.hp > 0
-    );
+    // 現在の位置から生存している味方を探す
+    for (
+        let i = this.currentCharacterIndex;
+        i < this.party.length;
+        i++
+    ) {
 
-    // 生存している味方がいない場合
-    if (aliveParty.length === 0) {
-        return null;
+        const character = this.party[i];
+
+        if (character.alive && character.hp > 0) {
+
+            this.currentCharacterIndex = i;
+
+            return character;
+        }
     }
 
-    // 現在の行動キャラクターを取得
-    return aliveParty[this.currentCharacterIndex] || null;
+    // 行動できる味方がいない場合
+    return null;
 }
-
 
 /* =========================
    次の味方へ進む
@@ -325,37 +338,40 @@ getCurrentCharacter() {
 
 nextCharacter() {
 
-    // 生存している味方を取得
-    const aliveParty = this.party.filter(
-        character => character.alive && character.hp > 0
-    );
+    // 現在のキャラクターの次から探す
+    for (
+        let i = this.currentCharacterIndex + 1;
+        i < this.party.length;
+        i++
+    ) {
 
-    // 生存者がいなければ終了
-    if (aliveParty.length === 0) {
-        return false;
+        const character = this.party[i];
+
+        if (character.alive && character.hp > 0) {
+
+            this.currentCharacterIndex = i;
+
+            return true;
+        }
     }
 
-    // 次のキャラクターへ
-    this.currentCharacterIndex++;
+    // 全員の行動選択が終了
+    this.currentCharacterIndex = 0;
 
-    // 全員の行動選択が終わったか確認
-    if (this.currentCharacterIndex >= aliveParty.length) {
-
-        // 味方の行動選択が終了
-        this.currentCharacterIndex = 0;
-
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
-  
-  /* =========================
+
+/* =========================
    味方ターン終了
 ========================= */
 
 endPlayerTurn() {
+
+    // 戦闘中でなければ終了
+    if (!this.isBattleActive) {
+        return false;
+    }
 
     // 味方の行動選択を初期化
     this.currentCharacterIndex = 0;
