@@ -15,6 +15,7 @@ export default class SkillSystem {
         // スキルデータ
         this.skills = {
 
+            // 魔法使い：単体攻撃
             fire: {
                 id: "fire",
                 name: "ファイア",
@@ -24,6 +25,7 @@ export default class SkillSystem {
                 power: 40
             },
 
+            // 魔法使い：全体攻撃
             flameBurst: {
                 id: "flameBurst",
                 name: "フレイムバースト",
@@ -33,6 +35,7 @@ export default class SkillSystem {
                 power: 30
             },
 
+            // 僧侶：単体回復
             heal: {
                 id: "heal",
                 name: "ヒール",
@@ -42,6 +45,7 @@ export default class SkillSystem {
                 power: 40
             },
 
+            // 僧侶：全体回復
             holyHeal: {
                 id: "holyHeal",
                 name: "ホーリーヒール",
@@ -77,12 +81,40 @@ export default class SkillSystem {
 
         // 戦闘中か確認
         if (!this.battleSystem.isActive) {
-
             return false;
         }
 
         // 使用者の確認
         if (!user || !user.isAlive()) {
+            return false;
+        }
+
+        // 味方以外はスキルを使用できない
+        if (!this.gameManager.party.includes(user)) {
+            return false;
+        }
+
+        // 使用者の職業を確認
+        if (
+            skill.type === "attack" &&
+            user.id !== "mage"
+        ) {
+
+            this.battleSystem.addLog(
+                "このキャラクターは攻撃魔法を使用できません。"
+            );
+
+            return false;
+        }
+
+        if (
+            skill.type === "heal" &&
+            user.id !== "priest"
+        ) {
+
+            this.battleSystem.addLog(
+                "このキャラクターは回復魔法を使用できません。"
+            );
 
             return false;
         }
@@ -97,41 +129,94 @@ export default class SkillSystem {
             return false;
         }
 
-        // 対象確認
-        if (skill.target === "single") {
+        // 対象を取得
+        let targets = [];
 
-            if (!target || !target.isAlive()) {
+        if (skill.type === "attack") {
 
-                this.battleSystem.addLog(
-                    "対象を選択してください。"
+            if (skill.target === "all") {
+
+                targets = this.gameManager.enemies.filter(
+                    enemy => enemy.isAlive()
                 );
 
-                return false;
+            } else {
+
+                if (
+                    !target ||
+                    !target.isAlive() ||
+                    !this.gameManager.enemies.includes(target)
+                ) {
+
+                    this.battleSystem.addLog(
+                        "攻撃する敵を選択してください。"
+                    );
+
+                    return false;
+                }
+
+                targets = [target];
             }
+        }
 
-            // 攻撃魔法の対象
-            if (
-                skill.type === "attack" &&
-                !this.gameManager.enemies.includes(target)
-            ) {
+        else if (skill.type === "heal") {
 
-                return false;
+            if (skill.target === "all") {
+
+                targets = this.gameManager.party.filter(
+                    character => character.isAlive()
+                );
+
+            } else {
+
+                if (
+                    !target ||
+                    !target.isAlive() ||
+                    !this.gameManager.party.includes(target)
+                ) {
+
+                    this.battleSystem.addLog(
+                        "回復する味方を選択してください。"
+                    );
+
+                    return false;
+                }
+
+                targets = [target];
             }
+        }
 
-            // 回復魔法の対象
-            if (
-                skill.type === "heal" &&
-                !this.gameManager.party.includes(target)
-            ) {
+        else {
+            return false;
+        }
 
-                return false;
-            }
+        // 対象がいない場合
+        if (targets.length === 0) {
 
+            this.battleSystem.addLog(
+                "スキルの対象がいません。"
+            );
+
+            return false;
+        }
+
+        // 回復対象が全員満タンの場合
+        if (
+            skill.type === "heal" &&
+            targets.every(character => {
+                return character.hp >= character.maxHp;
+            })
+        ) {
+
+            this.battleSystem.addLog(
+                "回復する必要のある仲間がいません。"
+            );
+
+            return false;
         }
 
         // MP消費
         if (!user.useMp(skill.mpCost)) {
-
             return false;
         }
 
@@ -147,7 +232,7 @@ export default class SkillSystem {
             result = this.executeAttackSkill(
                 user,
                 skill,
-                target
+                targets
             );
 
         }
@@ -158,11 +243,12 @@ export default class SkillSystem {
             result = this.executeHealSkill(
                 user,
                 skill,
-                target
+                targets
             );
 
         }
 
+        // UI更新
         this.battleSystem.updateUI();
 
         return result;
@@ -173,54 +259,34 @@ export default class SkillSystem {
        攻撃スキル
     ========================= */
 
-    executeAttackSkill(user, skill, target) {
-
-        let targets = [];
-
-        if (skill.target === "all") {
-
-            targets = this.gameManager.enemies.filter(
-                enemy => enemy.isAlive()
-            );
-
-        } else {
-
-            targets = [target];
-
-        }
-
-        if (targets.length === 0) {
-
-            this.battleSystem.addLog(
-                "攻撃できる敵がいません。"
-            );
-
-            return false;
-        }
+    executeAttackSkill(user, skill, targets) {
 
         // 各対象にダメージ
-        targets.forEach(enemy => {
+        for (const enemy of targets) {
 
             const damage = Math.max(
                 1,
                 user.attack + skill.power - enemy.defense
             );
 
-            enemy.takeDamage(damage);
+            // 実際に与えたダメージ
+            const actualDamage = enemy.takeDamage(damage);
 
             this.battleSystem.addLog(
-                `${enemy.name}に${damage}ダメージ！`
+                `${enemy.name}に${actualDamage}ダメージ！`
             );
 
+            // 敵を倒した場合
             if (!enemy.isAlive()) {
 
                 this.battleSystem.addLog(
                     `${enemy.name}を倒した！`
                 );
 
+                // 経験値を獲得
+                this.battleSystem.rewardEnemy(enemy);
             }
-
-        });
+        }
 
         // 勝敗判定
         this.battleSystem.checkBattleResult();
@@ -233,33 +299,10 @@ export default class SkillSystem {
        回復スキル
     ========================= */
 
-    executeHealSkill(user, skill, target) {
-
-        let targets = [];
-
-        if (skill.target === "all") {
-
-            targets = this.gameManager.party.filter(
-                character => character.isAlive()
-            );
-
-        } else {
-
-            targets = [target];
-
-        }
-
-        if (targets.length === 0) {
-
-            this.battleSystem.addLog(
-                "回復できる味方がいません。"
-            );
-
-            return false;
-        }
+    executeHealSkill(user, skill, targets) {
 
         // 各対象を回復
-        targets.forEach(character => {
+        for (const character of targets) {
 
             const beforeHp = character.hp;
 
@@ -271,8 +314,7 @@ export default class SkillSystem {
             this.battleSystem.addLog(
                 `${character.name}のHPが${recovered}回復した！`
             );
-
-        });
+        }
 
         return true;
     }
@@ -295,6 +337,31 @@ export default class SkillSystem {
     getSkill(skillId) {
 
         return this.skills[skillId] || null;
+    }
+
+
+    /* =========================
+       使用可能なスキル取得
+    ========================= */
+
+    getAvailableSkills(user) {
+
+        if (!user || !user.isAlive()) {
+            return [];
+        }
+
+        return this.getSkills().filter(skill => {
+
+            if (skill.type === "attack") {
+                return user.id === "mage";
+            }
+
+            if (skill.type === "heal") {
+                return user.id === "priest";
+            }
+
+            return false;
+        });
     }
 
 }
