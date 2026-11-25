@@ -8,6 +8,15 @@ let gameManager = null;
 let lastTime = 0;
 let isRunning = false;
 
+// ゲーム中のBGM
+const gameBGM = new Audio("Resource/Gamebgm.wav");
+
+// BGMをループ再生
+gameBGM.loop = true;
+
+// 音量（0.0～1.0）
+gameBGM.volume = 0.4;
+
 // タイトル画面を表示中か
 let isTitleScreen = true;
 
@@ -38,6 +47,10 @@ function startGame() {
 
     // ゲーム開始
     gameManager.start();
+   
+   // ゲームのBGM
+   gameBGM.currentTime = 0;
+   gameBGM.play();
 
     // ゲームループ開始
     isRunning = true;
@@ -69,6 +82,10 @@ function gameLoop(currentTime) {
     } else {
 
         isRunning = false;
+       
+       // BGMを停止
+    gameBGM.pause();
+    gameBGM.currentTime = 0;
 
         console.log("GAME OVER");
         return;
