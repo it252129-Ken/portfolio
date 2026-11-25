@@ -48,6 +48,7 @@ export default class MapManager {
                 difficulty: 4,
                 background: "Resource/Maps/castle.png"
             }
+
         };
     }
 
@@ -57,6 +58,10 @@ export default class MapManager {
     ========================= */
 
     getMap(mapId) {
+
+        if (typeof mapId !== "string") {
+            return null;
+        }
 
         return this.maps[mapId] || null;
     }
