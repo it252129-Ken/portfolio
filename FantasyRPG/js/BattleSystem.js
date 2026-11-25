@@ -88,45 +88,45 @@ export default class BattleSystem {
     }
 
 
-    /* =========================
-       敵の通常攻撃
-    ========================= */
+/* =========================
+   敵の通常攻撃
+========================= */
 
-    enemyAttack(attacker, target) {
+enemyAttack(attacker, target) {
 
-        if (!this.isActive) {
-            return false;
-        }
-
-        if (!attacker || !attacker.isAlive()) {
-            return false;
-        }
-
-        if (!target || !target.isAlive()) {
-            return false;
-        }
-
-        // 敵の攻撃
-        const damage = attacker.attackTarget
-            ? attacker.attackTarget(target)
-            : Math.max(1, attacker.attack - target.defense);
-
-        // Enemyクラス以外にも対応
-        if (!attacker.attackTarget) {
-            target.takeDamage(damage);
-        }
-
-        const message =
-            `${attacker.name} の攻撃！ ${target.name} に ${damage} のダメージ！`;
-
-        console.log(message);
-        this.addLog(message);
-
-        // 戦闘結果を確認
-        this.checkBattleResult();
-
-        return damage;
+    if (!this.isActive) {
+        return false;
     }
+
+    if (!attacker || !attacker.isAlive()) {
+        return false;
+    }
+
+    if (!target || !target.isAlive()) {
+        return false;
+    }
+
+    // ダメージ計算
+    const damage = Math.max(
+        1,
+        attacker.attack - target.defense
+    );
+
+    // 味方にダメージ
+    target.takeDamage(damage);
+
+    // 攻撃メッセージ
+    const message =
+        `${attacker.name} の攻撃！ ${target.name} に ${damage} のダメージ！`;
+
+    console.log(message);
+    this.addLog(message);
+
+    // 戦闘結果を確認
+    this.checkBattleResult();
+
+    return damage;
+}
 
 
     /* =========================
