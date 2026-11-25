@@ -275,8 +275,8 @@ drawAllySprite(canvas, character) {
         if (time >= 90) {
             return new Enemy(
                 "サメ",
-                400,
-                35,
+                200,
+                25,
                 20,
                 { fin: 2, scale: 3 }
             );
