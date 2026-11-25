@@ -36,7 +36,7 @@ export default class Enemy extends Character {
 
 
     /* =========================
-       プレイヤーを攻撃する
+       味方を攻撃する
     ========================= */
 
     attackTarget(target) {
@@ -46,25 +46,34 @@ export default class Enemy extends Character {
             return 0;
         }
 
-        // 攻撃対象がいない場合
-        if (!target || !target.isAlive()) {
+        // 攻撃対象が存在しない場合
+        if (!target || typeof target.isAlive !== "function") {
+            return 0;
+        }
+
+        // 攻撃対象が戦闘不能なら攻撃しない
+        if (!target.isAlive()) {
             return 0;
         }
 
         // 防御力を考慮したダメージ
-        let damage = this.attack - target.defense;
-
-        // 最低ダメージは1
-        damage = Math.max(1, damage);
-
-        // 対象にダメージを与える
-        target.takeDamage(damage);
-
-        console.log(
-            `${this.name} の攻撃！ ${target.name} に ${damage} のダメージ！`
+        const damage = Math.max(
+            1,
+            this.attack - target.defense
         );
 
-        return damage;
+        // 実際に与えたダメージ
+        const actualDamage = target.takeDamage(damage);
+
+        console.log(
+            `${this.name}の攻撃！`
+        );
+
+        console.log(
+            `${target.name}に${actualDamage}のダメージ！`
+        );
+
+        return actualDamage;
     }
 
 
@@ -95,13 +104,17 @@ export default class Enemy extends Character {
         return {
             id: this.id,
             name: this.name,
+
             hp: this.hp,
             maxHp: this.maxHp,
+
             attack: this.attack,
             defense: this.defense,
+
+            exp: this.exp,
+
             alive: this.isAlive()
         };
     }
 
 }
-
