@@ -387,6 +387,16 @@ endPlayerTurn() {
 
     console.log("敵のターン開始！");
 
+    // 敵の行動を実行
+    this.battleSystem.executeEnemyTurn();
+
+    // 戦闘が終了していない場合
+    if (this.isBattleActive) {
+
+        // 敵ターンを終了して次のターンへ
+        this.endEnemyTurn();
+    }
+
     return true;
 }
 
