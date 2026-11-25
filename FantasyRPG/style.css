@@ -1,26 +1,47 @@
 
 /* =========================
    CHRONICLES OF FOURIA
-   全体設定
+   全体デザイン
 ========================= */
 
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
 body {
+    margin: 0;
     min-height: 100vh;
-    background:
-        radial-gradient(circle at top, #263e65, #10182e 65%, #080e1c);
     color: #f5e8c8;
-    font-family: "Georgia", "Yu Mincho", serif;
+    font-family: Georgia, "Yu Mincho", serif;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #263653,
+            #101827 65%,
+            #080d17
+        );
 }
 
 button {
     font-family: inherit;
     cursor: pointer;
+    transition: 0.25s;
+}
+
+button:hover {
+    filter: brightness(1.25);
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    transform: none;
+}
+
+.hidden {
+    display: none !important;
 }
 
 
@@ -29,25 +50,29 @@ button {
 ========================= */
 
 .screen {
-    width: 100%;
     min-height: 100vh;
+    width: 100%;
     padding: 40px 20px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.hidden {
-    display: none !important;
+.screen h1 {
+    color: #e8c77b;
+    text-align: center;
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px #b58b3b;
 }
 
-h1 {
-    color: #e8c879;
+.screen h2 {
+    color: #e8c77b;
     text-align: center;
-    font-size: 36px;
-    letter-spacing: 3px;
-    margin-bottom: 25px;
-    text-shadow: 0 0 15px #b88c3c;
+}
+
+.screen p {
+    line-height: 1.7;
 }
 
 
@@ -55,39 +80,54 @@ h1 {
    タイトル画面
 ========================= */
 
-#title-screen {
+.title-screen {
     justify-content: center;
     text-align: center;
+
+    background:
+        linear-gradient(
+            rgba(5, 10, 20, 0.55),
+            rgba(5, 10, 20, 0.9)
+        ),
+        radial-gradient(
+            circle,
+            #405477,
+            #101827 70%
+        );
 }
 
-#title-screen h1 {
-    font-size: clamp(32px, 6vw, 64px);
-    letter-spacing: 5px;
+.title-content {
+    max-width: 900px;
+}
+
+.title-content h1 {
+    font-size: clamp(32px, 6vw, 68px);
     margin-bottom: 20px;
 }
 
-#title-screen p {
-    color: #d6d9e5;
-    font-size: 18px;
-    margin-bottom: 45px;
+.title-content p {
+    color: #d8cba9;
+    font-size: 20px;
+    margin-bottom: 60px;
 }
 
 #start-button {
-    padding: 16px 55px;
-    border: 2px solid #e8c879;
-    border-radius: 8px;
-    background: linear-gradient(#80602c, #46351e);
-    color: #fff2cc;
+    padding: 18px 65px;
     font-size: 22px;
     font-weight: bold;
     letter-spacing: 3px;
-    box-shadow: 0 0 20px #c69a45;
-    transition: 0.2s;
-}
 
-#start-button:hover {
-    transform: scale(1.08);
-    background: linear-gradient(#a9823b, #634a25);
+    color: #211a10;
+    background: linear-gradient(
+        135deg,
+        #f6df9b,
+        #b58b3b
+    );
+
+    border: 2px solid #f8e8b7;
+    border-radius: 8px;
+
+    box-shadow: 0 0 25px #b58b3b66;
 }
 
 
@@ -95,74 +135,76 @@ h1 {
    マップ選択画面
 ========================= */
 
-#map-screen {
-    justify-content: flex-start;
+#map-screen > p {
+    color: #d0c4a5;
+    margin-bottom: 35px;
 }
 
 #map-container {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1050px;
+
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 25px;
 }
 
 .map-card {
-    min-width: 0;
-    padding: 15px;
-    border: 3px solid #92713d;
-    border-radius: 10px;
-    background: linear-gradient(145deg, #263653, #111c32);
+    padding: 0 0 20px;
+    overflow: hidden;
+
     color: #f5e8c8;
-    text-align: left;
-    transition: 0.2s;
-}
+    background: linear-gradient(
+        145deg,
+        #293951,
+        #151f30
+    );
 
-.map-card:hover {
-    transform: translateY(-5px);
-    border-color: #f5d47e;
-    box-shadow: 0 0 18px #c69a45;
-}
-
-.map-card.selected {
-    border-color: #ffe18a;
-    box-shadow: 0 0 25px #e5bd5b;
+    border: 2px solid #806a43;
+    border-radius: 12px;
+    text-align: center;
 }
 
 .map-card img {
-    display: block;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 190px;
     object-fit: cover;
-    border-radius: 5px;
-    margin-bottom: 12px;
-    image-rendering: pixelated;
+    display: block;
 }
 
 .map-card h2 {
-    color: #f0ce7d;
-    font-size: 24px;
-    margin-bottom: 8px;
+    margin: 18px 10px 8px;
 }
 
 .map-card p {
-    color: #d0d5e1;
-    font-size: 15px;
-    line-height: 1.7;
+    margin: 7px 12px;
+    color: #d6c9a9;
 }
 
-#map-back-button {
-    margin-top: 30px;
-    padding: 12px 35px;
-    border: 2px solid #92713d;
-    border-radius: 6px;
-    background: #263653;
-    color: #fff2cc;
-    font-size: 17px;
+.map-card.selected {
+    border-color: #f5d77d;
+    box-shadow: 0 0 20px #e8c77b88;
 }
 
-#map-back-button:hover {
-    background: #3d5278;
+#map-back-button,
+#map-decision-button {
+    margin-top: 25px;
+    padding: 13px 30px;
+
+    color: #f5e8c8;
+    background: #354760;
+
+    border: 1px solid #b58b3b;
+    border-radius: 7px;
+    font-size: 16px;
+}
+
+#map-decision-button {
+    background: linear-gradient(
+        135deg,
+        #8c6b32,
+        #49371c
+    );
 }
 
 
@@ -174,107 +216,265 @@ h1 {
     gap: 20px;
 }
 
+#battle-map-name {
+    margin: 0;
+}
+
 #battle-container {
     width: 100%;
     max-width: 960px;
-    border: 4px solid #b48a47;
-    border-radius: 8px;
     overflow: hidden;
-    background: #10182e;
-    box-shadow: 0 0 20px #000;
+
+    border: 3px solid #b58b3b;
+    border-radius: 10px;
+
+    background: #111827;
+    box-shadow: 0 0 25px #00000088;
 }
 
 #battle-canvas {
-    display: block;
     width: 100%;
     height: auto;
-    background: #263653;
-    image-rendering: pixelated;
+    display: block;
 }
+
+
+/* =========================
+   戦闘メッセージ
+========================= */
 
 #battle-message {
     width: 100%;
     max-width: 960px;
     min-height: 55px;
-    padding: 15px;
-    border: 2px solid #92713d;
-    border-radius: 6px;
-    background: #111c32;
-    color: #f5d98d;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 12px 20px;
+
+    color: #f6df9b;
+    background: #202d40;
+
+    border: 1px solid #a88a50;
+    border-radius: 7px;
+
+    font-size: 17px;
     text-align: center;
-    font-size: 18px;
 }
 
 
 /* =========================
-   パーティーステータス
+   味方ステータス
 ========================= */
 
-#party-status {
+#party-area,
+#enemy-area,
+#command-area,
+#battle-log-area {
     width: 100%;
     max-width: 960px;
+}
+
+#party-status {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
 }
 
 .character-status {
-    padding: 12px;
-    border: 2px solid #92713d;
-    border-radius: 6px;
-    background: linear-gradient(145deg, #263653, #111c32);
+    padding: 15px;
+
+    background: linear-gradient(
+        145deg,
+        #30415a,
+        #1b2638
+    );
+
+    border: 1px solid #9c8456;
+    border-radius: 8px;
+
+    transition: 0.2s;
 }
 
 .character-status h3 {
-    color: #f0ce7d;
-    margin-bottom: 8px;
+    margin-top: 0;
+    color: #f5d77d;
+    text-align: center;
 }
 
 .character-status p {
-    color: #dce4f3;
+    margin: 7px 0;
     font-size: 14px;
-    margin-top: 5px;
+}
+
+.character-status.dead {
+    opacity: 0.4;
+    filter: grayscale(1);
+    border-color: #713b3b;
 }
 
 
 /* =========================
-   コマンド選択
+   敵ステータス
+========================= */
+
+#enemy-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.enemy-status-card {
+    flex: 1 1 180px;
+    padding: 15px;
+
+    background: linear-gradient(
+        145deg,
+        #56313a,
+        #2b1b27
+    );
+
+    border: 1px solid #a75b5b;
+    border-radius: 8px;
+}
+
+.enemy-status-card h3 {
+    margin-top: 0;
+    color: #ffaaaa;
+}
+
+.enemy-status-card p {
+    margin-bottom: 0;
+}
+
+
+/* =========================
+   戦闘コマンド
 ========================= */
 
 #command-container {
-    width: 100%;
-    max-width: 960px;
-    padding: 20px;
-    border: 2px solid #92713d;
-    border-radius: 8px;
-    background: #111c32;
-}
-
-#command-container h2 {
-    color: #f0ce7d;
-    font-size: 20px;
-    margin-bottom: 15px;
-}
-
-#command-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
 }
 
-#command-buttons button {
-    padding: 13px 8px;
-    border: 2px solid #92713d;
-    border-radius: 6px;
-    background: linear-gradient(#34496b, #1b2a45);
-    color: #fff2cc;
-    font-size: 17px;
-    transition: 0.2s;
+#command-container button {
+    padding: 16px 10px;
+
+    color: #f5e8c8;
+    background: linear-gradient(
+        145deg,
+        #455a75,
+        #25354b
+    );
+
+    border: 1px solid #b58b3b;
+    border-radius: 7px;
+
+    font-size: 16px;
+    font-weight: bold;
 }
 
-#command-buttons button:hover {
-    background: linear-gradient(#536b91, #2c4165);
-    border-color: #f5d47e;
+#command-container button:hover {
+    background: linear-gradient(
+        145deg,
+        #8b7040,
+        #59431f
+    );
+}
+
+
+/* =========================
+   戦闘ログ
+========================= */
+
+#battle-log {
+    max-height: 190px;
+    overflow-y: auto;
+
+    padding: 15px;
+
+    color: #e5dcc5;
+    background: #111b29;
+
+    border: 1px solid #746344;
+    border-radius: 7px;
+}
+
+#battle-log p {
+    margin: 5px 0;
+    padding-bottom: 5px;
+
+    border-bottom: 1px solid #ffffff15;
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   結果画面
+========================= */
+
+#result-screen {
+    justify-content: center;
+    text-align: center;
+
+    background:
+        radial-gradient(
+            circle,
+            #34435d,
+            #111827 70%
+        );
+}
+
+.result-content {
+    width: 100%;
+    max-width: 600px;
+}
+
+#result-title {
+    font-size: clamp(38px, 7vw, 65px);
+}
+
+#result-description {
+    margin: 35px 0;
+    color: #e4d6b5;
+    font-size: 20px;
+}
+
+#result-screen button {
+    display: block;
+    width: 100%;
+    margin: 15px auto;
+    padding: 15px;
+
+    color: #f5e8c8;
+    background: linear-gradient(
+        135deg,
+        #455a75,
+        #25354b
+    );
+
+    border: 1px solid #b58b3b;
+    border-radius: 7px;
+
+    font-size: 17px;
+}
+
+
+/* =========================
+   スクロールバー
+========================= */
+
+#battle-log::-webkit-scrollbar {
+    width: 8px;
+}
+
+#battle-log::-webkit-scrollbar-thumb {
+    background: #8b7040;
+    border-radius: 10px;
 }
 
 
@@ -288,10 +488,6 @@ h1 {
         padding: 25px 12px;
     }
 
-    h1 {
-        font-size: 27px;
-    }
-
     #map-container {
         grid-template-columns: 1fr;
     }
@@ -300,11 +496,20 @@ h1 {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    #command-buttons {
+    #command-container {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .map-card h2 {
-        font-size: 20px;
+    .map-card img {
+        height: 160px;
     }
+
+    #battle-message {
+        font-size: 14px;
+    }
+
+    .character-status {
+        padding: 10px;
+    }
+
 }
