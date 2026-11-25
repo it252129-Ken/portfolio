@@ -152,7 +152,8 @@ selectMap(mapId) {
 }
 
 
-  /* =========================
+
+/* =========================
    戦闘開始
 ========================= */
 
@@ -164,22 +165,19 @@ startBattle() {
         return false;
     }
 
-   // 敵キャラクターを生成
-this.initializeEnemies();
-   
-   // 敵が生成されなかった場合
-if (this.enemies.length === 0) {
-    console.error("敵キャラクターを生成できませんでした。");
-    return false;
-}
+    // BattleSystemに戦闘開始を依頼
+    if (!this.battleSystem.startBattle()) {
+        console.error("戦闘を開始できませんでした。");
+        return false;
+    }
 
     // ターン数を初期化
     this.turnCount = 1;
 
-    // 行動選択キャラクターを初期化
+    // 行動キャラクターを初期化
     this.currentCharacterIndex = 0;
 
-    // 戦闘状態に変更
+    // ゲーム状態を変更
     this.gameState = "battle";
     this.isBattleActive = true;
 
@@ -420,40 +418,14 @@ endEnemyTurn() {
     return true;
 }
 
-  /* =========================
+/* =========================
    戦闘の勝敗判定
 ========================= */
 
 checkBattleResult() {
 
-    // 生存している味方を確認
-    const aliveParty = this.party.filter(
-        character => character.hp > 0 && character.alive
-    );
-
-    // 生存している敵を確認
-    const aliveEnemies = this.enemies.filter(
-        enemy => enemy.hp > 0 && enemy.alive
-    );
-
-    // 味方が全滅した場合
-    if (aliveParty.length === 0) {
-
-        this.finishBattle("defeat");
-
-        return "defeat";
-    }
-
-    // 敵を全滅させた場合
-    if (aliveEnemies.length === 0) {
-
-        this.finishBattle("victory");
-
-        return "victory";
-    }
-
-    // 戦闘継続
-    return "continue";
+    // BattleSystemに勝敗判定を委任
+    return this.battleSystem.checkBattleResult();
 }
 
 
@@ -463,8 +435,11 @@ checkBattleResult() {
 
 finishBattle(result) {
 
-    // 戦闘終了
+    // 戦闘状態を終了
     this.isBattleActive = false;
+
+    // BattleSystemの戦闘状態も終了
+    this.battleSystem.isActive = false;
 
     // 勝敗結果を保存
     this.battleResult = result;
@@ -472,15 +447,14 @@ finishBattle(result) {
     // ゲーム状態を変更
     this.gameState = "result";
 
+    // 結果画面を表示
+    this.uiManager.showResultScreen(result);
+
     // 結果メッセージ
     if (result === "victory") {
-
         console.log("戦闘勝利！");
-
     } else if (result === "defeat") {
-
         console.log("戦闘敗北……");
-
     }
 
     return result;
