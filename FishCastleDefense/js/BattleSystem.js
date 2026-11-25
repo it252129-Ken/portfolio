@@ -2,6 +2,14 @@
 class BattleSystem {
     constructor() {
         this.attackRange = 40;
+
+        // キャラクターごとの攻撃音
+    this.attackSounds = {
+        "漁師": soundEffects.fisherman,
+        "槍兵": soundEffects.spearman,
+        "弓兵": soundEffects.archer
+    };
+        
     }
 
     // 味方と敵が接触しているか確認
@@ -36,11 +44,23 @@ class BattleSystem {
 　　　　　　character.setAnimation("attack");
 
             if (character.canAttack(deltaTime)) {
-                target.takeDamage(character.attack);
 
-                console.log(
-                    `${character.name} が ${target.name} に ${character.attack} ダメージ！`
-                );
+    // キャラクターに対応した攻撃音を再生
+    const attackSound = this.attackSounds[character.name];
+
+    if (attackSound) {
+        attackSound.currentTime = 0;
+        attackSound.play().catch(error => {
+            console.error("攻撃音の再生に失敗しました:", error);
+        });
+    }
+
+    // ダメージ処理
+    target.takeDamage(character.attack);
+
+    console.log(
+        `${character.name} が ${target.name} に ${character.attack} ダメージ！`
+    );
 
                 if (!target.isAlive()) {
                     console.log(`${target.name} を撃破しました！`);
