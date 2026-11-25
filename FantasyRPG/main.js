@@ -4,6 +4,11 @@
    ゲーム起動・画面管理
 ========================= */
 
+import GameManager from "./js/GameManager.js";
+
+// ゲーム管理クラスを生成
+const gameManager = new GameManager();
+
 
 /* =========================
    画面要素の取得
