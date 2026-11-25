@@ -11,6 +11,9 @@ export default class Player {
         // パーティーメンバー
         this.party = [];
 
+        // パーティー人数の上限
+        this.maxPartySize = 4;
+
         // プレイヤー情報
         this.level = 1;
         this.exp = 0;
@@ -29,6 +32,11 @@ export default class Player {
 
         // 仲間が存在しない場合
         if (!character) {
+            return false;
+        }
+
+        // 人数上限の確認
+        if (this.party.length >= this.maxPartySize) {
             return false;
         }
 
@@ -74,9 +82,17 @@ export default class Player {
 
     gainExp(amount) {
 
+        amount = Math.max(0, Math.floor(amount));
+
+        if (amount === 0) {
+            return;
+        }
+
         this.exp += amount;
 
-        console.log(`${amount} の経験値を獲得！`);
+        console.log(
+            `${amount}の経験値を獲得！`
+        );
 
         // レベルアップ判定
         while (this.exp >= this.nextLevelExp) {
@@ -98,7 +114,9 @@ export default class Player {
         // 次のレベルに必要な経験値を増やす
         this.nextLevelExp = this.level * 100;
 
-        console.log(`レベルアップ！ 現在のレベル：${this.level}`);
+        console.log(
+            `レベルアップ！ 現在のレベル：${this.level}`
+        );
     }
 
 
@@ -108,9 +126,17 @@ export default class Player {
 
     gainGold(amount) {
 
+        amount = Math.max(0, Math.floor(amount));
+
+        if (amount === 0) {
+            return;
+        }
+
         this.gold += amount;
 
-        console.log(`${amount} ゴールドを獲得！`);
+        console.log(
+            `${amount}ゴールドを獲得！`
+        );
     }
 
 
@@ -119,6 +145,8 @@ export default class Player {
     ========================= */
 
     spendGold(amount) {
+
+        amount = Math.max(0, Math.floor(amount));
 
         if (this.gold < amount) {
             return false;
@@ -143,12 +171,88 @@ export default class Player {
 
 
     /* =========================
+       戦闘不能の仲間を取得
+    ========================= */
+
+    getDefeatedMembers() {
+
+        return this.party.filter(
+            member => !member.isAlive()
+        );
+    }
+
+
+    /* =========================
        全滅判定
     ========================= */
 
     isPartyDefeated() {
 
         return this.getAliveMembers().length === 0;
+    }
+
+
+    /* =========================
+       パーティー全員を回復
+    ========================= */
+
+    restoreParty() {
+
+        this.party.forEach(character => {
+
+            if (typeof character.restore === "function") {
+                character.restore();
+            }
+            else {
+                character.heal(character.maxHp);
+                character.recoverMp(character.maxMp);
+                character.resetDefending();
+            }
+
+        });
+    }
+
+
+    /* =========================
+       パーティーのステータス取得
+    ========================= */
+
+    getPartyStatus() {
+
+        return this.party.map(character => {
+
+            return {
+                id: character.id,
+                name: character.name,
+
+                hp: character.hp,
+                maxHp: character.maxHp,
+
+                mp: character.mp,
+                maxMp: character.maxMp,
+
+                alive: character.isAlive()
+            };
+
+        });
+    }
+
+
+    /* =========================
+       プレイヤー情報を取得
+    ========================= */
+
+    getStatus() {
+
+        return {
+            level: this.level,
+            exp: this.exp,
+            nextLevelExp: this.nextLevelExp,
+            gold: this.gold,
+
+            partyCount: this.party.length,
+            aliveCount: this.getAliveMembers().length
+        };
     }
 
 }
