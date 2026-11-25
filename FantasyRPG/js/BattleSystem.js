@@ -16,6 +16,9 @@ export default class BattleSystem {
         // 戦闘中かどうか
         this.isActive = false;
 
+        // 経験値を獲得済みの敵
+        this.rewardedEnemyIds = new Set();
+
         console.log("BattleSystem initialized");
     }
 
@@ -36,7 +39,10 @@ export default class BattleSystem {
         // 敵を生成
         this.gameManager.initializeEnemies();
 
-        if (this.gameManager.enemies.length === 0) {
+        if (
+            !this.gameManager.enemies ||
+            this.gameManager.enemies.length === 0
+        ) {
 
             console.warn("敵が生成されませんでした。");
 
@@ -46,14 +52,19 @@ export default class BattleSystem {
         // 戦闘ログを初期化
         this.battleLog = [];
 
+        // 経験値獲得履歴を初期化
+        this.rewardedEnemyIds.clear();
+
+        // 戦闘開始
         this.isActive = true;
 
-        // 戦闘開始ログ
         this.addLog("戦闘開始！");
 
         this.addLog(
             `${this.gameManager.currentMap.name}に敵が現れた！`
         );
+
+        this.updateUI();
 
         return true;
     }
@@ -77,24 +88,32 @@ export default class BattleSystem {
             return false;
         }
 
+        // 敵以外への攻撃を防止
+        if (!this.gameManager.enemies.includes(target)) {
+            return false;
+        }
+
         // ダメージ計算
         const damage = Math.max(
             1,
             attacker.attack - target.defense
         );
 
-        target.takeDamage(damage);
+        // 実際に与えたダメージ
+        const actualDamage = target.takeDamage(damage);
 
         this.addLog(
-            `${attacker.name}の攻撃！ ${target.name}に${damage}ダメージ！`
+            `${attacker.name}の攻撃！ ${target.name}に${actualDamage}ダメージ！`
         );
 
+        // 敵を倒した場合
         if (!target.isAlive()) {
 
             this.addLog(
                 `${target.name}を倒した！`
             );
 
+            this.rewardEnemy(target);
         }
 
         // 勝敗判定
@@ -103,7 +122,7 @@ export default class BattleSystem {
         // 画面更新
         this.updateUI();
 
-        return damage;
+        return actualDamage;
     }
 
 
@@ -125,24 +144,35 @@ export default class BattleSystem {
             return false;
         }
 
+        // 敵以外からの攻撃を防止
+        if (!this.gameManager.enemies.includes(attacker)) {
+            return false;
+        }
+
+        // 味方以外への攻撃を防止
+        if (!this.gameManager.party.includes(target)) {
+            return false;
+        }
+
         // ダメージ計算
         const damage = Math.max(
             1,
             attacker.attack - target.defense
         );
 
-        target.takeDamage(damage);
+        // 実際に受けたダメージ
+        const actualDamage = target.takeDamage(damage);
 
         this.addLog(
-            `${attacker.name}の攻撃！ ${target.name}は${damage}ダメージを受けた！`
+            `${attacker.name}の攻撃！ ${target.name}は${actualDamage}ダメージを受けた！`
         );
 
+        // 味方が戦闘不能になった場合
         if (!target.isAlive()) {
 
             this.addLog(
                 `${target.name}は戦闘不能になった！`
             );
-
         }
 
         // 勝敗判定
@@ -151,7 +181,40 @@ export default class BattleSystem {
         // 画面更新
         this.updateUI();
 
-        return damage;
+        return actualDamage;
+    }
+
+
+    /* =========================
+       敵撃破時の報酬
+    ========================= */
+
+    rewardEnemy(enemy) {
+
+        if (!enemy) {
+            return;
+        }
+
+        // 同じ敵から二重に報酬を獲得しない
+        if (this.rewardedEnemyIds.has(enemy.id)) {
+            return;
+        }
+
+        this.rewardedEnemyIds.add(enemy.id);
+
+        const exp = Math.max(
+            0,
+            Math.floor(enemy.exp || 0)
+        );
+
+        if (exp > 0 && this.gameManager.player) {
+
+            this.gameManager.player.gainExp(exp);
+
+            this.addLog(
+                `${exp}の経験値を獲得！`
+            );
+        }
     }
 
 
@@ -173,6 +236,20 @@ export default class BattleSystem {
             return false;
         }
 
+        // 味方以外への回復を防止
+        if (!this.gameManager.party.includes(target)) {
+            return false;
+        }
+
+        // すでにHPが満タンの場合
+        if (target.hp >= target.maxHp) {
+
+            this.addLog("このキャラクターのHPは満タンです！");
+
+            return false;
+        }
+
+        // MPが足りない場合
         if (healer.mp < mpCost) {
 
             this.addLog("MPが足りません！");
@@ -185,11 +262,13 @@ export default class BattleSystem {
             return false;
         }
 
-        // 回復量
+        // 回復前のHP
         const beforeHp = target.hp;
 
+        // HP回復
         target.heal(amount);
 
+        // 実際の回復量
         const recovered = target.hp - beforeHp;
 
         this.addLog(
@@ -213,6 +292,10 @@ export default class BattleSystem {
         }
 
         if (!character || !character.isAlive()) {
+            return false;
+        }
+
+        if (!this.gameManager.party.includes(character)) {
             return false;
         }
 
@@ -240,17 +323,15 @@ export default class BattleSystem {
 
         this.addLog("敵のターン！");
 
+        // 生存している敵
+        const enemies = this.gameManager.enemies.filter(
+            enemy => enemy.isAlive()
+        );
 
-        const enemies =
-            this.gameManager.enemies.filter(
-                enemy => enemy.isAlive()
-            );
-
-        const party =
-            this.gameManager.party.filter(
-                character => character.isAlive()
-            );
-
+        // 生存している味方
+        const party = this.gameManager.party.filter(
+            character => character.isAlive()
+        );
 
         // 敵がいない場合
         if (enemies.length === 0) {
@@ -260,7 +341,6 @@ export default class BattleSystem {
             return false;
         }
 
-
         // 味方がいない場合
         if (party.length === 0) {
 
@@ -269,41 +349,35 @@ export default class BattleSystem {
             return false;
         }
 
-
-        // 生存している敵が順番に攻撃
+        // 敵が順番に攻撃
         for (const enemy of enemies) {
 
+            // 戦闘が終了したら中断
             if (!this.isActive) {
                 break;
             }
 
-            const aliveParty =
-                this.gameManager.party.filter(
-                    character => character.isAlive()
-                );
+            // 生存している味方を再取得
+            const aliveParty = this.gameManager.party.filter(
+                character => character.isAlive()
+            );
 
             if (aliveParty.length === 0) {
                 break;
             }
 
-            // 生存している味方から対象を選ぶ
-            const target =
-                aliveParty[
-                    Math.floor(Math.random() * aliveParty.length)
-                ];
+            // 攻撃対象をランダムに選択
+            const target = aliveParty[
+                Math.floor(Math.random() * aliveParty.length)
+            ];
 
             this.enemyAttack(enemy, target);
-
         }
-
 
         // 防御状態を解除
         this.gameManager.party.forEach(character => {
-
             character.resetDefending();
-
         });
-
 
         // UI更新
         this.updateUI();
@@ -322,16 +396,15 @@ export default class BattleSystem {
             return false;
         }
 
-        const partyAlive =
-            this.gameManager.party.some(
-                character => character.isAlive()
-            );
+        // 味方の生存確認
+        const partyAlive = this.gameManager.party.some(
+            character => character.isAlive()
+        );
 
-        const enemiesAlive =
-            this.gameManager.enemies.some(
-                enemy => enemy.isAlive()
-            );
-
+        // 敵の生存確認
+        const enemiesAlive = this.gameManager.enemies.some(
+            enemy => enemy.isAlive()
+        );
 
         // 味方が全滅
         if (!partyAlive) {
@@ -340,7 +413,6 @@ export default class BattleSystem {
 
             return "defeat";
         }
-
 
         // 敵を全滅
         if (!enemiesAlive) {
@@ -370,13 +442,16 @@ export default class BattleSystem {
 
             this.addLog("敵をすべて倒した！勝利！");
 
-        } else {
+        }
+        else {
 
             this.addLog("パーティーは全滅した……");
 
         }
 
         this.gameManager.finishBattle(result);
+
+        this.updateUI();
     }
 
 
@@ -390,9 +465,7 @@ export default class BattleSystem {
 
         // ログは最大30件
         if (this.battleLog.length > 30) {
-
             this.battleLog.shift();
-
         }
 
         this.updateBattleLog();
@@ -426,7 +499,6 @@ export default class BattleSystem {
         }
 
         this.gameManager.uiManager.updateStatus();
-
     }
 
 
