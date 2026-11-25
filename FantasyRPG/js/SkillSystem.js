@@ -8,107 +8,164 @@ export default class SkillSystem {
 
     constructor(battleSystem) {
 
-        // 戦闘管理クラス
         this.battleSystem = battleSystem;
 
-        // スキル一覧
+        this.gameManager = battleSystem.gameManager;
+
+        // スキルデータ
         this.skills = {
 
             fire: {
                 id: "fire",
                 name: "ファイア",
-                mpCost: 10,
-                power: 40,
                 type: "attack",
-                target: "single"
+                target: "single",
+                mpCost: 10,
+                power: 40
             },
 
             flameBurst: {
                 id: "flameBurst",
                 name: "フレイムバースト",
-                mpCost: 25,
-                power: 30,
                 type: "attack",
-                target: "all"
+                target: "all",
+                mpCost: 25,
+                power: 30
             },
 
             heal: {
                 id: "heal",
                 name: "ヒール",
-                mpCost: 10,
-                power: 40,
                 type: "heal",
-                target: "single"
+                target: "single",
+                mpCost: 10,
+                power: 40
             },
 
             holyHeal: {
                 id: "holyHeal",
                 name: "ホーリーヒール",
-                mpCost: 25,
-                power: 30,
                 type: "heal",
-                target: "all"
+                target: "all",
+                mpCost: 25,
+                power: 30
             }
+
         };
+
+        console.log("SkillSystem initialized");
     }
 
 
     /* =========================
-       スキルを使用
+       スキル使用
     ========================= */
 
-    useSkill(skillId, user, target = null) {
+    useSkill(user, skillId, target = null) {
 
-        // スキルを取得
         const skill = this.skills[skillId];
 
+        // スキルの存在確認
         if (!skill) {
+
+            this.battleSystem.addLog(
+                "そのスキルは存在しません。"
+            );
+
             return false;
         }
 
         // 戦闘中か確認
         if (!this.battleSystem.isActive) {
+
             return false;
         }
 
-        // 使用者の生存確認
+        // 使用者の確認
         if (!user || !user.isAlive()) {
+
             return false;
         }
 
-        // MPが足りるか確認
+        // MP確認
         if (user.mp < skill.mpCost) {
-            this.battleSystem.addLog("MPが足りない！");
+
+            this.battleSystem.addLog(
+                "MPが足りません！"
+            );
+
             return false;
         }
 
-        // MPを消費
+        // 対象確認
+        if (skill.target === "single") {
+
+            if (!target || !target.isAlive()) {
+
+                this.battleSystem.addLog(
+                    "対象を選択してください。"
+                );
+
+                return false;
+            }
+
+            // 攻撃魔法の対象
+            if (
+                skill.type === "attack" &&
+                !this.gameManager.enemies.includes(target)
+            ) {
+
+                return false;
+            }
+
+            // 回復魔法の対象
+            if (
+                skill.type === "heal" &&
+                !this.gameManager.party.includes(target)
+            ) {
+
+                return false;
+            }
+
+        }
+
+        // MP消費
         if (!user.useMp(skill.mpCost)) {
+
             return false;
         }
 
-        // スキルの種類によって処理を分ける
+        this.battleSystem.addLog(
+            `${user.name}は${skill.name}を唱えた！`
+        );
+
+        let result = false;
+
+        // 攻撃魔法
         if (skill.type === "attack") {
 
-            return this.executeAttackSkill(
-                skill,
+            result = this.executeAttackSkill(
                 user,
+                skill,
                 target
             );
 
         }
 
-        if (skill.type === "heal") {
+        // 回復魔法
+        else if (skill.type === "heal") {
 
-            return this.executeHealSkill(
-                skill,
+            result = this.executeHealSkill(
                 user,
+                skill,
                 target
             );
 
         }
 
-        return false;
+        this.battleSystem.updateUI();
+
+        return result;
     }
 
 
@@ -116,24 +173,33 @@ export default class SkillSystem {
        攻撃スキル
     ========================= */
 
-    executeAttackSkill(skill, user, target) {
+    executeAttackSkill(user, skill, target) {
 
-        const enemies = this.battleSystem.gameManager.enemies;
+        let targets = [];
 
-        // 攻撃対象を決定
-        const targets = skill.target === "all"
-            ? enemies.filter(enemy => enemy.alive && enemy.hp > 0)
-            : [target];
+        if (skill.target === "all") {
 
-        if (
-            targets.length === 0 ||
-            targets.some(enemy => !enemy || !enemy.isAlive())
-        ) {
+            targets = this.gameManager.enemies.filter(
+                enemy => enemy.isAlive()
+            );
+
+        } else {
+
+            targets = [target];
+
+        }
+
+        if (targets.length === 0) {
+
+            this.battleSystem.addLog(
+                "攻撃できる敵がいません。"
+            );
+
             return false;
         }
 
-        // 敵にダメージ
-        for (const enemy of targets) {
+        // 各対象にダメージ
+        targets.forEach(enemy => {
 
             const damage = Math.max(
                 1,
@@ -142,14 +208,21 @@ export default class SkillSystem {
 
             enemy.takeDamage(damage);
 
-            const message =
-                `${user.name} は ${skill.name} を使用！ ${enemy.name} に ${damage} のダメージ！`;
+            this.battleSystem.addLog(
+                `${enemy.name}に${damage}ダメージ！`
+            );
 
-            console.log(message);
-            this.battleSystem.addLog(message);
-        }
+            if (!enemy.isAlive()) {
 
-        // 戦闘結果を確認
+                this.battleSystem.addLog(
+                    `${enemy.name}を倒した！`
+                );
+
+            }
+
+        });
+
+        // 勝敗判定
         this.battleSystem.checkBattleResult();
 
         return true;
@@ -160,44 +233,53 @@ export default class SkillSystem {
        回復スキル
     ========================= */
 
-    executeHealSkill(skill, user, target) {
+    executeHealSkill(user, skill, target) {
 
-        const party = this.battleSystem.gameManager.party;
+        let targets = [];
 
-        // 回復対象を決定
-        const targets = skill.target === "all"
-            ? party.filter(character => character.isAlive())
-            : [target];
+        if (skill.target === "all") {
 
-        if (
-            targets.length === 0 ||
-            targets.some(character => !character || !character.isAlive())
-        ) {
+            targets = this.gameManager.party.filter(
+                character => character.isAlive()
+            );
+
+        } else {
+
+            targets = [target];
+
+        }
+
+        if (targets.length === 0) {
+
+            this.battleSystem.addLog(
+                "回復できる味方がいません。"
+            );
+
             return false;
         }
 
-        // HPを回復
-        for (const character of targets) {
+        // 各対象を回復
+        targets.forEach(character => {
 
             const beforeHp = character.hp;
 
             character.heal(skill.power);
 
-            const recovered = character.hp - beforeHp;
+            const recovered =
+                character.hp - beforeHp;
 
-            const message =
-                `${user.name} は ${skill.name} を使用！ ${character.name} のHPが ${recovered} 回復！`;
+            this.battleSystem.addLog(
+                `${character.name}のHPが${recovered}回復した！`
+            );
 
-            console.log(message);
-            this.battleSystem.addLog(message);
-        }
+        });
 
         return true;
     }
 
 
     /* =========================
-       スキル一覧を取得
+       スキル一覧取得
     ========================= */
 
     getSkills() {
@@ -207,7 +289,7 @@ export default class SkillSystem {
 
 
     /* =========================
-       指定したスキルを取得
+       スキル個別取得
     ========================= */
 
     getSkill(skillId) {
@@ -216,4 +298,3 @@ export default class SkillSystem {
     }
 
 }
-
