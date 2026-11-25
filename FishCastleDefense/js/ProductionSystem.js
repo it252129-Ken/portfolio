@@ -15,7 +15,7 @@ class ProductionSystem {
             fisherman: {
                 name: "漁師",
                 hp: 100,
-                attack: 15,
+                attack: 150,
                 attackInterval: 1.0,
                 speed: 50,
                 cost: {
@@ -26,7 +26,7 @@ class ProductionSystem {
             spearman: {
                 name: "槍兵",
                 hp: 180,
-                attack: 25,
+                attack: 250,
                 attackInterval: 1.5,
                 speed: 40,
                 cost: {
@@ -37,7 +37,7 @@ class ProductionSystem {
             archer: {
                 name: "弓兵",
                 hp: 80,
-                attack: 35,
+                attack: 350,
                 attackInterval: 1.2,
                 speed: 45,
                 cost: {
