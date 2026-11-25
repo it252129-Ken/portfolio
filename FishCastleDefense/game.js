@@ -11,6 +11,20 @@ let isRunning = false;
 // ゲーム中のBGM
 const gameBGM = new Audio("Resource/Gamebgm.wav");
 
+
+// 効果音
+const soundEffects = {
+    button: new Audio("Resource/ボタン.mp3"),
+    fisherman: new Audio("Resource/漁師.mp3"),
+    spearman: new Audio("Resource/槍兵.mp3"),
+    archer: new Audio("Resource/弓兵.mp3")
+};
+
+// 効果音の音量
+for (const sound of Object.values(soundEffects)) {
+    sound.volume = 0.6;
+}
+
 // BGMをループ再生
 gameBGM.loop = true;
 
@@ -111,30 +125,43 @@ function setupProductionButtons() {
         document.getElementById("produce-archer");
 
 
-    // 漁師
-    fishermanButton.addEventListener("click", () => {
+// 漁師
+fishermanButton.addEventListener("click", () => {
 
-        if (gameManager && isRunning) {
-            gameManager.produceCharacter("fisherman");
-        }
+    if (gameManager && isRunning) {
 
-    });
+        soundEffects.button.currentTime = 0;
+        soundEffects.button.play();
+
+        gameManager.produceCharacter("fisherman");
+    }
+
+});
 
 
     // 槍兵
     spearmanButton.addEventListener("click", () => {
 
         if (gameManager && isRunning) {
+
+            soundEffects.button.currentTime = 0;
+        soundEffects.button.play();
+
             gameManager.produceCharacter("spearman");
         }
 
     });
+   
 
 
     // 海の弓兵
     archerButton.addEventListener("click", () => {
 
         if (gameManager && isRunning) {
+
+ 　　　　soundEffects.button.currentTime = 0;
+        soundEffects.button.play();
+           
             gameManager.produceCharacter("archer");
         }
 
