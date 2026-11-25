@@ -28,7 +28,9 @@ export default class Enemy extends Character {
         });
 
         // 敵固有の情報
-        this.exp = exp;
+        this.exp = Number.isFinite(exp)
+            ? Math.max(0, Math.floor(exp))
+            : 0;
 
         // 敵の行動状態
         this.action = "attack";
@@ -65,13 +67,16 @@ export default class Enemy extends Character {
         // 実際に与えたダメージ
         const actualDamage = target.takeDamage(damage);
 
-        console.log(
-            `${this.name}の攻撃！`
-        );
+        console.log(`${this.name}の攻撃！`);
 
         console.log(
             `${target.name}に${actualDamage}のダメージ！`
         );
+
+        // 対象が戦闘不能になった場合
+        if (!target.isAlive()) {
+            console.log(`${target.name}は戦闘不能になった！`);
+        }
 
         return actualDamage;
     }
@@ -85,6 +90,7 @@ export default class Enemy extends Character {
 
         // 戦闘不能なら行動しない
         if (!this.isAlive()) {
+            this.action = null;
             return null;
         }
 
@@ -102,18 +108,25 @@ export default class Enemy extends Character {
     getStatus() {
 
         return {
+
             id: this.id,
             name: this.name,
 
             hp: this.hp,
             maxHp: this.maxHp,
 
+            mp: this.mp,
+            maxMp: this.maxMp,
+
             attack: this.attack,
             defense: this.defense,
 
             exp: this.exp,
 
-            alive: this.isAlive()
+            alive: this.isAlive(),
+
+            action: this.action
+
         };
     }
 
