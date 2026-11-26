@@ -1,1 +1,333 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CHRONICLES OF FOURIA</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         タイトル画面
+    ========================== -->
+
+    <section id="title-screen" class="screen title-screen">
+
+        <div class="title-content">
+
+            <h1>CHRONICLES OF FOURIA</h1>
+
+            <p>四人の英雄と四つの世界</p>
+
+            <p class="title-description">
+                仲間とともに世界を巡り、
+                運命に立ち向かえ。
+            </p>
+
+            <button id="start-button">
+                START
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         マップ選択画面
+    ========================== -->
+
+    <section id="map-screen" class="screen hidden">
+
+        <div id="map-container">
+
+            <h2>MAP SELECT</h2>
+
+            <p>冒険するコースを選択してください。</p>
+
+            <div class="map-list">
+
+                <!-- 緑の平原 -->
+
+                <button class="map-card" data-map="grassland">
+
+                    <img
+                        src="Resource/Map1.png"
+                        alt="緑の平原">
+
+                    <h3>緑の平原</h3>
+
+                    <p>Grassland</p>
+
+                </button>
+
+
+                <!-- 灼熱の火山 -->
+
+                <button class="map-card" data-map="volcano">
+
+                    <img
+                        src="Resource/Map2.png"
+                        alt="灼熱の火山">
+
+                    <h3>灼熱の火山</h3>
+
+                    <p>Volcano</p>
+
+                </button>
+
+
+                <!-- 氷結の雪山 -->
+
+                <button class="map-card" data-map="snow">
+
+                    <img
+                        src="Resource/Map3.png"
+                        alt="氷結の雪山">
+
+                    <h3>氷結の雪山</h3>
+
+                    <p>Snow Mountain</p>
+
+                </button>
+
+
+                <!-- 暗黒の古城 -->
+
+                <button class="map-card" data-map="castle">
+
+                    <img
+                        src="Resource/Map4.png"
+                        alt="暗黒の古城">
+
+                    <h3>暗黒の古城</h3>
+
+                    <p>Dark Castle</p>
+
+                </button>
+
+            </div>
+
+
+            <button id="map-back-button">
+                TITLE
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         戦闘画面
+    ========================== -->
+
+    <section id="battle-screen" class="screen hidden">
+
+        <h2 id="battle-map-name">
+            BATTLE
+        </h2>
+
+
+        <!-- 戦闘エリア -->
+
+        <div id="battle-container">
+
+            <canvas
+                id="battle-canvas"
+                width="960"
+                height="540">
+            </canvas>
+
+            <div id="battle-message">
+                BATTLE START!
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             味方ステータス
+        ========================== -->
+
+        <div id="party-status">
+
+            <!-- 剣士 -->
+
+            <div
+                id="swordsman-status"
+                class="character-status">
+
+                <h3>剣士</h3>
+
+                <p>
+                    HP:
+                    <span id="swordsman-hp">100</span>
+                </p>
+
+                <p>
+                    MP:
+                    <span id="swordsman-mp">20</span>
+                </p>
+
+            </div>
+
+
+            <!-- 魔法使い -->
+
+            <div
+                id="mage-status"
+                class="character-status">
+
+                <h3>魔法使い</h3>
+
+                <p>
+                    HP:
+                    <span id="mage-hp">80</span>
+                </p>
+
+                <p>
+                    MP:
+                    <span id="mage-mp">50</span>
+                </p>
+
+            </div>
+
+
+            <!-- 僧侶 -->
+
+            <div
+                id="priest-status"
+                class="character-status">
+
+                <h3>僧侶</h3>
+
+                <p>
+                    HP:
+                    <span id="priest-hp">80</span>
+                </p>
+
+                <p>
+                    MP:
+                    <span id="priest-mp">50</span>
+                </p>
+
+            </div>
+
+
+            <!-- 弓使い -->
+
+            <div
+                id="archer-status"
+                class="character-status">
+
+                <h3>弓使い</h3>
+
+                <p>
+                    HP:
+                    <span id="archer-hp">90</span>
+                </p>
+
+                <p>
+                    MP:
+                    <span id="archer-mp">30</span>
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             敵ステータス
+        ========================== -->
+
+        <div id="enemy-status">
+
+        </div>
+
+
+        <!-- =========================
+             戦闘コマンド
+        ========================== -->
+
+        <div id="command-container">
+
+            <button id="attack-button">
+                ATTACK
+            </button>
+
+            <button id="skill-button">
+                SKILL
+            </button>
+
+            <button id="defend-button">
+                DEFEND
+            </button>
+
+            <button id="item-button">
+                ITEM
+            </button>
+
+        </div>
+
+
+        <!-- =========================
+             戦闘ログ
+        ========================== -->
+
+        <div id="battle-log">
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         結果画面
+    ========================== -->
+
+    <section id="result-screen" class="screen hidden">
+
+        <div class="result-content">
+
+            <h2 id="result-title">
+                RESULT
+            </h2>
+
+            <p id="result-description">
+                戦闘が終了しました。
+            </p>
+
+
+            <button id="result-map-button">
+                MAP SELECT
+            </button>
+
+
+            <button id="result-title-button">
+                TITLE
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         JavaScript
+    ========================== -->
+
+    <script type="module" src="main.js"></script>
+
+</body>
+
+</html>
+
