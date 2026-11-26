@@ -17,6 +17,9 @@ let actedCharacterIds = new Set();
 // ポーションの所持数
 let potionCount = 3;
 
+// コマンド処理中の重複防止
+let commandProcessing = false;
+
 
 /* =========================
    ゲーム初期化
@@ -32,6 +35,8 @@ function initializeGame() {
 
     potionCount = 3;
 
+    commandProcessing = false;
+
     gameManager.uiManager.showTitleScreen();
 }
 
@@ -41,6 +46,10 @@ function initializeGame() {
 ========================= */
 
 function startGame() {
+
+    if (!gameManager) {
+        return;
+    }
 
     gameManager.uiManager.showMapScreen();
 
@@ -52,6 +61,10 @@ function startGame() {
     if (decisionButton) {
         decisionButton.remove();
     }
+
+    document.querySelectorAll(".map-card").forEach(card => {
+        card.classList.remove("selected");
+    });
 }
 
 
@@ -60,6 +73,10 @@ function startGame() {
 ========================= */
 
 function selectMap(mapId) {
+
+    if (!gameManager) {
+        return;
+    }
 
     const result = gameManager.selectMap(mapId);
 
@@ -83,17 +100,25 @@ function selectMap(mapId) {
 
     if (!decisionButton) {
 
+        const mapContainer =
+            document.getElementById("map-container");
+
+        if (!mapContainer) {
+            return;
+        }
+
         decisionButton = document.createElement("button");
 
         decisionButton.id = "map-decision-button";
 
         decisionButton.textContent = "このマップに挑戦する";
 
-        document
-            .getElementById("map-container")
-            .appendChild(decisionButton);
+        mapContainer.appendChild(decisionButton);
 
-        decisionButton.addEventListener("click", startBattle);
+        decisionButton.addEventListener(
+            "click",
+            startBattle
+        );
     }
 }
 
@@ -104,15 +129,20 @@ function selectMap(mapId) {
 
 function startBattle() {
 
-    if (!selectedMapId) {
+    if (!selectedMapId || commandProcessing) {
         return;
     }
+
+    commandProcessing = true;
 
     actedCharacterIds.clear();
 
     const result = gameManager.startBattle();
 
     if (result === false) {
+
+        commandProcessing = false;
+
         return;
     }
 
@@ -121,6 +151,8 @@ function startBattle() {
     gameManager.uiManager.updateMapName();
 
     gameManager.uiManager.updateStatus();
+
+    commandProcessing = false;
 
     showCurrentCharacter();
 }
@@ -132,13 +164,13 @@ function startBattle() {
 
 function showCurrentCharacter() {
 
-    if (!gameManager.isBattleActive) {
+    if (!gameManager || !gameManager.isBattleActive) {
         return;
     }
 
     const character = gameManager.getCurrentCharacter();
 
-    if (!character) {
+    if (!character || !character.isAlive()) {
         return;
     }
 
@@ -146,9 +178,11 @@ function showCurrentCharacter() {
         `${character.name}の行動です。コマンドを選択してください。`
     );
 
-    // 行動中のキャラクターを強調表示
-    document.querySelectorAll(".party-member").forEach(card => {
+    // 行動中のキャラクターを更新
+    document.querySelectorAll(".character-status").forEach(card => {
+
         card.classList.remove("active-turn");
+
     });
 
     const activeCard =
@@ -157,6 +191,8 @@ function showCurrentCharacter() {
     if (activeCard) {
         activeCard.classList.add("active-turn");
     }
+
+    gameManager.uiManager.updateStatus();
 }
 
 
@@ -166,7 +202,19 @@ function showCurrentCharacter() {
 
 function advanceAfterAction(character) {
 
-    if (!gameManager.isBattleActive) {
+    if (!gameManager || !gameManager.isBattleActive) {
+        commandProcessing = false;
+        return;
+    }
+
+    if (!character || !character.isAlive() && !actedCharacterIds.has(character.id)) {
+        commandProcessing = false;
+        return;
+    }
+
+    // 同じキャラクターの二重行動を防ぐ
+    if (actedCharacterIds.has(character.id)) {
+        commandProcessing = false;
         return;
     }
 
@@ -180,7 +228,7 @@ function advanceAfterAction(character) {
         return member.isAlive();
     });
 
-    // 全員が行動したか確認
+    // 生存している味方全員が行動したか確認
     const allActed = livingParty.every(member => {
         return actedCharacterIds.has(member.id);
     });
@@ -197,10 +245,16 @@ function advanceAfterAction(character) {
         gameManager.endPlayerTurn();
 
         if (!gameManager.isBattleActive) {
+
+            commandProcessing = false;
+
             return;
         }
 
+        // 次の味方ターン
         gameManager.currentCharacterIndex = 0;
+
+        commandProcessing = false;
 
         showCurrentCharacter();
 
@@ -218,17 +272,22 @@ function advanceAfterAction(character) {
         const nextCharacter = gameManager.party[nextIndex];
 
         if (
+            nextCharacter &&
             nextCharacter.isAlive() &&
             !actedCharacterIds.has(nextCharacter.id)
         ) {
 
             gameManager.currentCharacterIndex = nextIndex;
 
+            commandProcessing = false;
+
             showCurrentCharacter();
 
             return;
         }
     }
+
+    commandProcessing = false;
 }
 
 
@@ -330,27 +389,47 @@ function chooseAlly() {
 
 function attackCommand() {
 
-    if (!gameManager.isBattleActive) {
+    if (
+        !gameManager.isBattleActive ||
+        commandProcessing
+    ) {
         return;
     }
 
+    commandProcessing = true;
+
     const character = gameManager.getCurrentCharacter();
 
-    if (!character) {
+    if (!character || !character.isAlive()) {
+
+        commandProcessing = false;
+
         return;
     }
 
     const target = chooseEnemy();
 
     if (!target) {
+
+        commandProcessing = false;
+
         return;
     }
 
     const success =
-        gameManager.battleSystem.playerAttack(character, target);
+        gameManager.battleSystem.playerAttack(
+            character,
+            target
+        );
 
     if (success !== false) {
+
         advanceAfterAction(character);
+
+    }
+    else {
+
+        commandProcessing = false;
     }
 }
 
@@ -361,13 +440,21 @@ function attackCommand() {
 
 function skillCommand() {
 
-    if (!gameManager.isBattleActive) {
+    if (
+        !gameManager.isBattleActive ||
+        commandProcessing
+    ) {
         return;
     }
 
+    commandProcessing = true;
+
     const character = gameManager.getCurrentCharacter();
 
-    if (!character) {
+    if (!character || !character.isAlive()) {
+
+        commandProcessing = false;
+
         return;
     }
 
@@ -384,18 +471,30 @@ function skillCommand() {
         );
 
         if (answer === null) {
+
+            commandProcessing = false;
+
             return;
         }
 
         if (answer === "1") {
+
             skillId = "fire";
+
             target = chooseEnemy();
+
         }
         else if (answer === "2") {
+
             skillId = "flameBurst";
+
         }
         else {
+
             alert("正しい番号を入力してください。");
+
+            commandProcessing = false;
+
             return;
         }
     }
@@ -410,18 +509,30 @@ function skillCommand() {
         );
 
         if (answer === null) {
+
+            commandProcessing = false;
+
             return;
         }
 
         if (answer === "1") {
+
             skillId = "heal";
+
             target = chooseAlly();
+
         }
         else if (answer === "2") {
+
             skillId = "holyHeal";
+
         }
         else {
+
             alert("正しい番号を入力してください。");
+
+            commandProcessing = false;
+
             return;
         }
     }
@@ -432,6 +543,8 @@ function skillCommand() {
             "このキャラクターはスキルを使用できません。"
         );
 
+        commandProcessing = false;
+
         return;
     }
 
@@ -440,6 +553,9 @@ function skillCommand() {
         (skillId === "fire" || skillId === "heal") &&
         !target
     ) {
+
+        commandProcessing = false;
+
         return;
     }
 
@@ -451,7 +567,13 @@ function skillCommand() {
         );
 
     if (success) {
+
         advanceAfterAction(character);
+
+    }
+    else {
+
+        commandProcessing = false;
     }
 }
 
@@ -462,19 +584,36 @@ function skillCommand() {
 
 function defendCommand() {
 
-    if (!gameManager.isBattleActive) {
+    if (
+        !gameManager.isBattleActive ||
+        commandProcessing
+    ) {
         return;
     }
+
+    commandProcessing = true;
 
     const character = gameManager.getCurrentCharacter();
 
-    if (!character) {
+    if (!character || !character.isAlive()) {
+
+        commandProcessing = false;
+
         return;
     }
 
-    gameManager.battleSystem.defendCharacter(character);
+    const success =
+        gameManager.battleSystem.defendCharacter(character);
 
-    advanceAfterAction(character);
+    if (success !== false) {
+
+        advanceAfterAction(character);
+
+    }
+    else {
+
+        commandProcessing = false;
+    }
 }
 
 
@@ -484,13 +623,21 @@ function defendCommand() {
 
 function itemCommand() {
 
-    if (!gameManager.isBattleActive) {
+    if (
+        !gameManager.isBattleActive ||
+        commandProcessing
+    ) {
         return;
     }
 
+    commandProcessing = true;
+
     const character = gameManager.getCurrentCharacter();
 
-    if (!character) {
+    if (!character || !character.isAlive()) {
+
+        commandProcessing = false;
+
         return;
     }
 
@@ -498,12 +645,16 @@ function itemCommand() {
 
         alert("ポーションを持っていません。");
 
+        commandProcessing = false;
+
         return;
     }
 
     if (character.hp >= character.maxHp) {
 
         alert("このキャラクターはHPが満タンです。");
+
+        commandProcessing = false;
 
         return;
     }
@@ -515,11 +666,23 @@ function itemCommand() {
     );
 
     if (!answer) {
+
+        commandProcessing = false;
+
         return;
     }
 
-    character.heal(50);
+    // 実際の回復量を取得
+    const healedAmount = character.heal(50);
 
+    if (healedAmount <= 0) {
+
+        commandProcessing = false;
+
+        return;
+    }
+
+    // ポーションを消費
     potionCount--;
 
     gameManager.battleSystem.addLog(
@@ -527,7 +690,7 @@ function itemCommand() {
     );
 
     gameManager.battleSystem.addLog(
-        "HPが50回復した！"
+        `HPが${healedAmount}回復した！`
     );
 
     advanceAfterAction(character);
@@ -540,20 +703,21 @@ function itemCommand() {
 
 function returnToMap() {
 
+    if (!gameManager) {
+        return;
+    }
+
     actedCharacterIds.clear();
 
+    commandProcessing = false;
+
     // 次の戦闘に備えて味方を回復
-    gameManager.party.forEach(character => {
+    gameManager.player.restoreParty();
 
-        character.heal(character.maxHp);
+    // マップ選択状態を解除
+    gameManager.mapManager.clearCurrentMap();
 
-        if (typeof character.recoverMp === "function") {
-            character.recoverMp(character.maxMp);
-        }
-    });
-
-    gameManager.currentMap = null;
-
+    // 敵情報を初期化
     gameManager.enemies = [];
 
     gameManager.isBattleActive = false;
@@ -564,10 +728,14 @@ function returnToMap() {
 
     selectedMapId = null;
 
+    // マップ選択表示を解除
     document.querySelectorAll(".map-card").forEach(card => {
+
         card.classList.remove("selected");
+
     });
 
+    // マップ決定ボタンを削除
     const decisionButton =
         document.getElementById("map-decision-button");
 
@@ -575,6 +743,7 @@ function returnToMap() {
         decisionButton.remove();
     }
 
+    // マップ画面へ戻る
     gameManager.uiManager.showMapScreen();
 }
 
@@ -598,7 +767,7 @@ function setupEventListeners() {
     // ゲーム開始
     document
         .getElementById("start-button")
-        .addEventListener("click", startGame);
+        ?.addEventListener("click", startGame);
 
     // マップ選択
     document.querySelectorAll(".map-card").forEach(card => {
@@ -614,33 +783,33 @@ function setupEventListeners() {
     // マップ選択画面から戻る
     document
         .getElementById("map-back-button")
-        .addEventListener("click", returnToTitle);
+        ?.addEventListener("click", returnToTitle);
 
     // 戦闘コマンド
     document
         .getElementById("attack-button")
-        .addEventListener("click", attackCommand);
+        ?.addEventListener("click", attackCommand);
 
     document
         .getElementById("skill-button")
-        .addEventListener("click", skillCommand);
+        ?.addEventListener("click", skillCommand);
 
     document
         .getElementById("defend-button")
-        .addEventListener("click", defendCommand);
+        ?.addEventListener("click", defendCommand);
 
     document
         .getElementById("item-button")
-        .addEventListener("click", itemCommand);
+        ?.addEventListener("click", itemCommand);
 
     // 戦闘結果画面
     document
         .getElementById("result-map-button")
-        .addEventListener("click", returnToMap);
+        ?.addEventListener("click", returnToMap);
 
     document
         .getElementById("result-title-button")
-        .addEventListener("click", returnToTitle);
+        ?.addEventListener("click", returnToTitle);
 }
 
 
