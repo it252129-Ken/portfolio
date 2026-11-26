@@ -23,7 +23,7 @@ export default class MapManager {
             volcano: {
                 id: "volcano",
                 name: "灼熱の火山",
-                image: "Resource/Map2.png",
+                image: "Resource/Maps/Map2.png",
                 difficulty: 2,
                 description:
                     "灼熱の溶岩が流れる危険な火山。"
@@ -32,7 +32,7 @@ export default class MapManager {
             snow: {
                 id: "snow",
                 name: "氷結の雪山",
-                image: "Resource/Map3.png",
+                image: "Resource/Maps/Map3.png",
                 difficulty: 3,
                 description:
                     "凍てつく雪と氷に覆われた山岳地帯。"
@@ -41,7 +41,7 @@ export default class MapManager {
             castle: {
                 id: "castle",
                 name: "暗黒の古城",
-                image: "Resource/Map4.png",
+                image: "Resource/Maps/Map4.png",
                 difficulty: 4,
                 description:
                     "強大な敵が待ち受ける暗黒の古城。"
