@@ -8,6 +8,7 @@ export default class UIManager {
 
     constructor(gameManager) {
 
+        // ゲーム管理クラス
         this.gameManager = gameManager;
 
         // 画面
@@ -44,10 +45,20 @@ export default class UIManager {
 
     hideAllScreens() {
 
-        this.titleScreen.classList.add("hidden");
-        this.mapScreen.classList.add("hidden");
-        this.battleScreen.classList.add("hidden");
-        this.resultScreen.classList.add("hidden");
+        const screens = [
+            this.titleScreen,
+            this.mapScreen,
+            this.battleScreen,
+            this.resultScreen
+        ];
+
+        screens.forEach(screen => {
+
+            if (screen) {
+                screen.classList.add("hidden");
+            }
+
+        });
     }
 
 
@@ -59,7 +70,9 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        this.titleScreen.classList.remove("hidden");
+        if (this.titleScreen) {
+            this.titleScreen.classList.remove("hidden");
+        }
     }
 
 
@@ -71,7 +84,9 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        this.mapScreen.classList.remove("hidden");
+        if (this.mapScreen) {
+            this.mapScreen.classList.remove("hidden");
+        }
     }
 
 
@@ -83,7 +98,11 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        this.battleScreen.classList.remove("hidden");
+        if (this.battleScreen) {
+            this.battleScreen.classList.remove("hidden");
+        }
+
+        this.updateMapName();
 
         this.updateStatus();
     }
@@ -97,7 +116,13 @@ export default class UIManager {
 
         this.hideAllScreens();
 
-        this.resultScreen.classList.remove("hidden");
+        if (this.resultScreen) {
+            this.resultScreen.classList.remove("hidden");
+        }
+
+        if (!this.resultTitle || !this.resultDescription) {
+            return;
+        }
 
         if (result === "victory") {
 
@@ -106,12 +131,21 @@ export default class UIManager {
             this.resultDescription.textContent =
                 "敵をすべて倒しました！";
 
-        } else {
+        }
+        else if (result === "defeat") {
 
             this.resultTitle.textContent = "GAME OVER";
 
             this.resultDescription.textContent =
                 "パーティーは全滅してしまった……";
+
+        }
+        else {
+
+            this.resultTitle.textContent = "RESULT";
+
+            this.resultDescription.textContent =
+                "戦闘が終了しました。";
         }
     }
 
@@ -122,12 +156,21 @@ export default class UIManager {
 
     updateMapName() {
 
-        if (!this.gameManager.currentMap) {
+        if (!this.battleMapName) {
+            return;
+        }
+
+        const currentMap = this.gameManager.currentMap;
+
+        if (!currentMap) {
+
+            this.battleMapName.textContent = "マップ未選択";
+
             return;
         }
 
         this.battleMapName.textContent =
-            this.gameManager.currentMap.name;
+            currentMap.name;
     }
 
 
@@ -151,7 +194,7 @@ export default class UIManager {
 
         const party = this.gameManager.party;
 
-        if (!party) {
+        if (!party || !Array.isArray(party)) {
             return;
         }
 
@@ -187,11 +230,9 @@ export default class UIManager {
                 return;
             }
 
+            // HP表示
             const hpElement =
                 document.getElementById(ids.hp);
-
-            const mpElement =
-                document.getElementById(ids.mp);
 
             if (hpElement) {
 
@@ -199,13 +240,19 @@ export default class UIManager {
                     character.hp;
             }
 
+
+            // MP表示
+            const mpElement =
+                document.getElementById(ids.mp);
+
             if (mpElement) {
 
                 mpElement.textContent =
                     character.mp;
             }
 
-            // 戦闘不能のキャラクターを表示
+
+            // キャラクターカード
             const statusElement =
                 document.getElementById(
                     `${character.id}-status`
@@ -216,6 +263,12 @@ export default class UIManager {
                 statusElement.classList.toggle(
                     "dead",
                     !character.isAlive()
+                );
+
+                statusElement.classList.toggle(
+                    "active-turn",
+                    character.id ===
+                    this.gameManager.currentCharacter?.id
                 );
             }
 
@@ -231,16 +284,20 @@ export default class UIManager {
 
         const enemies = this.gameManager.enemies;
 
-        if (!this.enemyStatus || !enemies) {
+        if (!this.enemyStatus || !Array.isArray(enemies)) {
             return;
         }
 
+        // 表示を初期化
         this.enemyStatus.innerHTML = "";
 
+        // 生存している敵
         const aliveEnemies = enemies.filter(
             enemy => enemy.isAlive()
         );
 
+
+        // 敵が存在しない場合
         if (aliveEnemies.length === 0) {
 
             const message = document.createElement("p");
@@ -253,6 +310,7 @@ export default class UIManager {
         }
 
 
+        // 敵を表示
         aliveEnemies.forEach(enemy => {
 
             const enemyElement =
@@ -261,17 +319,20 @@ export default class UIManager {
             enemyElement.className = "enemy-status-card";
 
 
+            // 敵の名前
             const name = document.createElement("h3");
 
             name.textContent = enemy.name;
 
 
+            // HP
             const hp = document.createElement("p");
 
             hp.textContent =
                 `HP：${enemy.hp} / ${enemy.maxHp}`;
 
 
+            // 表示を追加
             enemyElement.appendChild(name);
 
             enemyElement.appendChild(hp);
@@ -292,7 +353,8 @@ export default class UIManager {
             return;
         }
 
-        this.battleMessage.textContent = message;
+        this.battleMessage.textContent =
+            message ?? "";
     }
 
 
@@ -306,18 +368,27 @@ export default class UIManager {
             return;
         }
 
+        // ログを初期化
         this.battleLog.innerHTML = "";
 
+        if (!Array.isArray(logs)) {
+            return;
+        }
+
+
+        // ログを表示
         logs.forEach(message => {
 
             const logElement =
                 document.createElement("p");
 
-            logElement.textContent = message;
+            logElement.textContent =
+                String(message);
 
             this.battleLog.appendChild(logElement);
 
         });
+
 
         // 最新のログが見えるようにする
         this.battleLog.scrollTop =
@@ -330,6 +401,8 @@ export default class UIManager {
     ========================= */
 
     update() {
+
+        this.updateMapName();
 
         this.updateStatus();
     }
