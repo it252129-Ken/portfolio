@@ -14,7 +14,7 @@ export default class MapManager {
             grassland: {
                 id: "grassland",
                 name: "緑の平原",
-                image: "Resource/Map1.png",
+                image: "Resource/Maps/Map1.png",
                 difficulty: 1,
                 description:
                     "冒険の始まりとなる穏やかな草原。"
